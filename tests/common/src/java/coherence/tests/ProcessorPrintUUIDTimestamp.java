@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ *
+ * Licensed under the Universal Permissive License v 1.0 as shown at
+ * http://oss.oracle.com/licenses/upl.
+ */
+package coherence.tests;
+
+import com.tangosol.io.pof.PofReader;
+import com.tangosol.io.pof.PofWriter;
+import com.tangosol.io.pof.PortableObject;
+
+import com.tangosol.util.InvocableMap.Entry;
+import com.tangosol.util.UUID;
+
+import com.tangosol.util.processor.AbstractProcessor;
+
+import java.io.IOException;
+
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
+import java.util.TimeZone;
+
+public class ProcessorPrintUUIDTimestamp
+        extends AbstractProcessor
+        implements PortableObject
+    {
+    // ----- constructors ---------------------------------------------------
+
+    public ProcessorPrintUUIDTimestamp()
+        {
+        }
+
+    // ----- InvocableMap.EntryProcessor interface --------------------------
+
+    public Object process(Entry entry)
+        {
+        return ((UUID) entry.getValue()).getTimestamp();
+        }
+
+    // ----- PortableObject interface ---------------------------------------
+
+    public void readExternal(PofReader reader) throws IOException
+        {
+        }
+
+    public void writeExternal(PofWriter writer) throws IOException
+        {
+        }
+    }

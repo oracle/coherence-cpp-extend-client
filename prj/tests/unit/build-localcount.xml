@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence library.                                                    -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="localcounttest" default="help" basedir=".">
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.include" value="include,include/public"/>
+  <property name="project.libs"    value="coherence"/>
+  <property name="project.source"  value="tests/src/ThreadLocalCountTest.cpp"/>
+  <property name="project.type"    value="executable"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <property name="args" value="m"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <target name="run" description="Run the unit tests.">
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+          <exec executable="${build.bin.dir}/${project.name}">
+            <env key="PATH" path="${build.lib.dir}"/>
+            <arg line="${args}"/>
+          </exec>
+      </then>
+      <elseif>
+        <isset property="env.os.osx"/>
+        <then>
+          <exec executable="${build.bin.dir}/${project.name}">
+            <env key="DYLD_LIBRARY_PATH" path="${build.lib.dir}"/>
+            <arg line="${args}"/>
+          </exec>
+        </then>
+      </elseif>
+      <else>
+        <exec executable="${build.bin.dir}/${project.name}">
+          <env key="LD_LIBRARY_PATH" path="${build.lib.dir}"/>
+          <arg line="${args}"/>
+        </exec>
+      </else>
+    </if>
+  </target>
+
+</project>

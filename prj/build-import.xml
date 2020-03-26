@@ -1,0 +1,863 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build file that contains common build properties, paths, task     -->
+<!-- definitions, and targets. This build file should be imported in *all* -->
+<!-- project build files immediately after any overriden project           -->
+<!-- properties.                                                           -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="build-import" default="help" xmlns:ivy="antlib:org.apache.ivy.ant" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global project properties                                           -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Global source directories -->
+  <dirname  property="main.dir"         file="${ant.file.build-import}/.."/>
+  <property name="bin.dir"              value="${main.dir}/bin"/>
+  <property name="doc.dir"              value="${main.dir}/doc"/>
+  <property name="include.dir"          value="${main.dir}/include"/>
+  <property name="lib.common.dir"       value="${main.dir}/lib/common"/>
+  <property name="prj.dir"              value="${main.dir}/prj"/>
+  <property name="src.dir"              value="${main.dir}/src"/>
+  <property name="tests.dir"            value="${main.dir}/tests"/>
+  <property name="tools.dir"            value="${main.dir}/tools"/>
+  <property name="tools.common.dir"     value="${tools.dir}/internal/common"/>
+
+  <!-- Global properties -->
+  <property environment="env"/>
+
+  <!-- properties specific to this build environment; e.g. artifactory location -->
+  <property file="${ant.home}/build.properties"/>
+
+  <!-- project properties; e.g. version number, build type -->
+  <property file="${prj.dir}/build.properties"/>
+
+  <exec executable="hostname" failifexecutionfails="false" outputproperty="env.COMPUTERNAME"/>
+  <property name="env.HOSTNAME" value="${env.COMPUTERNAME}"/>
+  <tstamp>
+    <format property="description.time"   pattern="MMdd.yyyy.hhmm"/>
+  </tstamp>
+
+  <property name="build.copyright"      value="Copyright (c) 2000, 2020, Oracle and/or its affiliates."/>
+  <property name="build.description"    value="Internal-${env.HOSTNAME}-${description.time}"/>
+  <property name="build.number"         value="0"/>
+  <property name="build.type"           value="debug"/>
+  <property name="build.version"        value="0.0.0.0.0"/>
+  <property name="build.version_maven"  value="0.0.0-0-0"/>
+
+  <!-- Global artifact directories -->
+  <property name="build.dir"            value="${main.dir}/build"/>
+  <property name="build.classes.dir"    value="${build.dir}/classes"/>
+  <property name="build.doc.dir"        value="${build.dir}/doc"/>
+  <property name="dist.dir"             value="${main.dir}/dist"/>
+  <property name="dist.patches.dir"     value="${dist.dir}/patches"/>
+  <property name="dist.version.dir"     value="${dist.dir}/${build.version}b${build.number}"/>
+  <property name="dist.bin.dir"         value="${dist.version.dir}/bin"/>
+  <property name="dist.doc.dir"         value="${dist.version.dir}/doc"/>
+  <property name="dist.include.dir"     value="${dist.version.dir}/include"/>
+  <property name="dist.lib.dir"         value="${dist.version.dir}/lib"/>
+  <property name="lib.dir"              value="${build.dir}/jars"/>
+
+  <!-- Ivy -->
+  <property  name="ivy.artifactory.name"            value="default"/>
+  <property  name="ivy.artifactory.server.public"   value="https://repo1.maven.org"/>
+  <property  name="ivy.artifactory.server.internal" value="${ivy.artifactory.server.public}"/>
+  <property  name="ivy.path.public"                 value="maven2"/>
+  <property  name="ivy.path.internal"               value="${ivy.path.public}"/>
+  <property  name="ivy.cache"                       value="${build.dir}/ivycache"/>
+  <property  name="ivy.jar.dir"                     value="${tools.common.dir}/ant-contrib/lib"/>
+  <property  name="ivy.version"                     value="2.4.0"/>
+  <property  name="ivy.jar"                         value="${ivy.jar.dir}/ivy-${ivy.version}.jar"/>
+  <available property="ivy-exists"                  file="${ivy.jar}"/>
+
+  <!-- Default C++ compilation properties -->
+  <condition property="cc.debug"        value="true">
+    <equals arg1="${build.type}" arg2="debug" trim="true"/>
+  </condition>
+  <property name="cc.debug"             value="false"/>
+  <property name="cc.dependencydepth"   value="-1"/>
+  <property name="cc.exceptions"        value="true"/>
+  <property name="cc.incremental"       value="false"/>
+  <property name="cc.multithreaded"     value="true"/>
+  <condition property="cc.optimize"     value="minimal">
+    <equals arg1="${build.type}" arg2="debug" trim="true"/>
+  </condition>
+  <condition property="cc.optimize"     value="aggressive">
+    <equals arg1="${build.type}" arg2="release" trim="true"/>
+  </condition>
+  <property name="cc.rebuild"           value="${project.rebuild}"/>
+  <property name="cc.relentless"        value="false"/>
+  <property name="cc.rtti"              value="true"/>
+  <property name="cc.runtime"           value="dynamic"/>
+  <property name="cc.subsystem"         value="console"/>
+  <property name="cc.warnings"          value="production"/>
+  <property name="cc.compileonly"       value="${project.compileonly}"/>
+
+  <!-- Default project properties -->
+  <property name="project.company"      value="Oracle"/>
+  <property name="project.define"       value=""/>
+  <property name="project.description"  value="${project.company} Coherence for C++"/>
+  <property name="project.libs"         value=""/>
+  <property name="project.lib.dir"      value=""/>
+  <property name="project.name"         value="${ant.project.name}"/>
+  <property name="project.type"         value="static"/>
+  <condition property="project.version" value="${build.version}">
+    <equals arg1="${build.description}" arg2="" trim="true"/>
+  </condition>
+  <property name="project.version"      value="${build.version} ${build.description}"/>
+  <property name="project.copyright"    value="${build.copyright}"/>
+
+  <!-- Build artifact name -->
+  <condition property="build.artifact"  value="${project.name}-debug">
+    <equals arg1="${build.type}" arg2="debug" trim="true"/>
+  </condition>
+
+  <condition property="build.artifact"  value="${project.name}">
+    <equals arg1="${build.type}" arg2="release" trim="true"/>
+  </condition>
+
+  <!-- Platform-specific properties -->
+
+  <!-- MacOS -->
+  <condition property="env.os.osx">
+    <os name="Mac OS X"/>
+  </condition>
+  <condition property="env.os" value="osx">
+    <isset property="env.os.osx"/>
+  </condition>
+  <!-- Set display name for the MacOS compiler to "llvm-clang" - for zip file -->
+  <condition property="display.cc" value="llvm-clang">
+    <isset property="env.os.osx"/>
+  </condition>
+
+  <!-- Solaris -->
+  <condition property="env.os.solaris">
+    <os name="SunOS"/>
+  </condition>
+  <condition property="env.os" value="solaris">
+    <isset property="env.os.solaris"/>
+  </condition>
+
+  <!-- Windows -->
+  <condition property="env.os.windows">
+    <os family="Windows"/>
+  </condition>
+  <condition property="env.os" value="windows">
+    <isset property="env.os.windows"/>
+  </condition>
+  <!-- Set display name for the Windows compiler to "msvc" - for zip file -->
+  <condition property="display.cc" value="msvc">
+    <isset property="env.os.windows"/>
+  </condition>
+
+  <!-- Linux -->
+  <condition property="env.os.linux">
+    <and>
+      <os family="Unix"/>
+      <not>
+        <or>
+          <isset property="env.os.osx"/>
+          <isset property="env.os.solaris"/>
+        </or>
+      </not>
+    </and>
+  </condition>
+  <condition property="env.os" value="linux">
+    <isset property="env.os.linux"/>
+  </condition>
+
+  <!-- x86 -->
+  <condition property="env.arch.x86">
+    <or>
+      <os arch="x86"/>
+      <os arch="i386"/>
+    </or>
+  </condition>
+  <condition property="env.arch" value="x86">
+    <isset property="env.arch.x86"/>
+  </condition>
+
+  <!-- x64 -->
+  <condition property="env.arch.x64">
+    <or>
+      <os arch="amd64"/>
+      <os arch="x86_64"/>
+    </or>
+  </condition>
+  <condition property="env.arch" value="x64">
+    <isset property="env.arch.x64"/>
+  </condition>
+
+  <!-- sparc v9 32b -->
+  <condition property="env.arch.sparc32">
+    <and>
+      <os arch="sparc"/>
+      <equals arg1="${sun.arch.data.model}" arg2="32"/>
+    </and>
+  </condition>
+  <condition property="env.arch" value="sparc32">
+    <isset property="env.arch.sparc32"/>
+  </condition>
+
+  <!-- sparc v9 64b -->
+  <condition property="env.arch.sparc64">
+    <and>
+      <os arch="sparc"/>
+      <or>
+        <equals arg1="${sun.arch.data.model}" arg2="64"/>
+        <equals arg1="${env.arch}"            arg2="sparc64"/>
+      </or>
+    </and>
+  </condition>
+  <condition property="env.arch" value="sparc64">
+    <isset property="env.arch.sparc64"/>
+  </condition>
+
+  <!-- Set platorm-specific build directory properties -->
+  <property name="build.bin.dir"
+            value="${build.dir}/bin/${env.os}/${env.arch}/${build.type}"/>
+  <property name="build.lib.dir"
+            value="${build.dir}/lib/${env.os}/${env.arch}/${build.type}"/>
+  <property name="build.obj.dir"
+            value="${build.dir}/obj/${env.os}/${env.arch}/${build.type}"/>
+  <property name="build.include.dir"
+            value="${build.dir}/include/${env.os}/${env.arch}/${build.type}"/>
+  <property name="build.src.dir"
+            value="${build.dir}/src/${env.os}/${env.arch}/${build.type}"/>
+
+  <!-- Set the platform-specific lib directory -->
+  <property name="lib.platform.dir"
+            value="${lib.dir}/${env.os}/${env.arch}"/>
+
+  <!-- Set the platform-specific tools directory -->
+  <property name="tools.platform.dir"
+            value="${tools.dir}/internal/${env.os}/${env.arch}"/>
+
+  <!-- Set the platform-specific compiler name -->
+  <condition property="build.cc" value="vs${env.MSVC_VER}">
+    <equals arg1="${env.os}" arg2="windows"/>
+  </condition>
+  <condition property="build.cc" value="gcc">
+    <or>
+      <equals arg1="${env.os}" arg2="linux"/>
+      <equals arg1="${env.os}" arg2="osx"/>
+    </or>
+  </condition>
+  <condition property="build.cc" value="sunpro">
+    <equals arg1="${env.os}" arg2="solaris"/>
+  </condition>
+
+  <!-- Set the OS display name -->
+  <condition property="display.os" value="macos">
+    <isset property="env.os.osx"/>
+  </condition>
+  <condition property="display.os" value="${env.os}">
+    <not>
+      <isset property="env.os.osx"/>
+    </not>
+  </condition>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global project task definitions                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <classpath>
+      <pathelement location="${tools.common.dir}/ant-contrib/lib/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
+  <path id="cpptasks.classpath" path="${tools.common.dir}/ant-contrib/lib/cpptasks-1.0b4.jar" />
+
+  <taskdef resource="cpptasks.tasks" classpathref="cpptasks.classpath"
+      loaderref="cpptasks.path.loader" />
+
+  <typedef resource="cpptasks.types" loaderref="cpptasks.path.loader" />
+
+  <taskdef resource="ant-tangosol.properties">
+    <classpath>
+      <pathelement location="${tools.dir}/ant-tangosol/lib/ant-tangosol.jar"/>
+    </classpath>
+  </taskdef>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global computed properties                                          -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <if>
+    <not>
+      <isset property="build.official"/>
+    </not>
+    <then>
+      <var name="build.description" value="Internal-${env.HOSTNAME}-${description.time}"/>
+      <var name="build.number"      value="0"/>
+    </then>
+  </if>
+
+  <propertyregex property="build.version.major"
+                 input="${build.version}"
+                 regexp="([0-9])\.([0-9])\.([0-9])\.([0-9])\.([0-9])"
+                 select="\1"/>
+  <propertyregex property="build.version.minor"
+                 input="${build.version}"
+                 regexp="([0-9])\.([0-9])\.([0-9])\.([0-9])\.([0-9])"
+                 select="\2"/>
+  <propertyregex property="build.version.service"
+                 input="${build.version}"
+                 regexp="([0-9])\.([0-9])\.([0-9])\.([0-9])\.([0-9])"
+                 select="\3"/>
+  <propertyregex property="build.version.patchset"
+                 input="${build.version}"
+                 regexp="([0-9])\.([0-9])\.([0-9])\.([0-9])\.([0-9])"
+                 select="\4"/>
+  <propertyregex property="build.version.patch"
+                 input="${build.version}"
+                 regexp="([0-9]+)\.([0-9])\.([0-9])\.([0-9])\.([0-9])"
+                 select="\5"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global helper targets                                               -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Output a banner to the console -->
+  <target name="banner">
+    <echo/>
+    <echo>******************************************************************************</echo>
+    <echo>|</echo>
+    <echo>| ${banner.message}</echo>
+    <echo>|</echo>
+    <echo>******************************************************************************</echo>
+    <echo/>
+  </target>
+
+  <!-- Wrapper around the cc task -->
+  <target name="cc">
+    <property name="cc.name" value="${build.artifact}"/>
+
+    <!-- Configure compiler -->
+    <if>
+      <or>
+        <isset property="env.os.solaris"/>
+        <isset property="env.cc.sunpro"/>
+      </or>
+      <then>
+        <property name="cc.compiler" value="CC"/>
+        <property name="cc.sunpro"   value="true"/>
+        <if>
+          <istrue value="${cc.debug}"/>
+          <then>
+            <property name="cc.sunpro.debug" value="true"/>
+          </then>
+          <else>
+            <property name="cc.sunpro.release" value="true"/>
+          </else>
+        </if>
+        <if>
+          <equals arg1="${env.arch}" arg2="sparc64" trim="true"/>
+          <then>
+            <property name="cc.sunpro.m64"     value="true"/>
+            <property name="cc.sunpro.sparc64" value="true"/>
+          </then>
+          <elseif>
+            <equals arg1="${env.arch}" arg2="sparc32" trim="true"/>
+            <then>
+              <property name="cc.sunpro.m32"     value="true"/>
+              <property name="cc.sunpro.sparc32" value="true"/>
+            </then>
+          </elseif>
+          <elseif>
+            <equals arg1="${env.arch}" arg2="x64" trim="true"/>
+            <then>
+              <property name="cc.sunpro.m64" value="true"/>
+              <property name="cc.sunpro.x64" value="true"/>
+            </then>
+          </elseif>
+          <elseif>
+            <equals arg1="${env.arch}" arg2="x86" trim="true"/>
+            <then>
+              <property name="cc.sunpro.m32" value="true"/>
+              <property name="cc.sunpro.x86" value="true"/>
+            </then>
+          </elseif>
+         </if>
+      </then>
+      <elseif>
+        <isset property="env.os.windows"/>
+        <then>
+          <property name="cc.compiler" value="msvc"/>
+          <property name="cc.msvc"     value="true"/>
+          <if>
+            <istrue value="${cc.debug}"/>
+            <then>
+              <property name="cc.msvc.debug" value="true"/>
+            </then>
+            <else>
+              <property name="cc.msvc.release" value="true"/>
+            </else>
+          </if>
+          <if>
+            <equals arg1="${build.cc}" arg2="vs2013"/>
+            <then>
+              <property name="cc.msvc.2013" value="true"/>
+            </then>
+            <elseif>
+              <equals arg1="${build.cc}" arg2="vs2012"/>
+              <then>
+                <property name="cc.msvc.2012" value="true"/>
+              </then>
+            </elseif>
+            <elseif>
+              <equals arg1="${build.cc}" arg2="vs2010"/>
+              <then>
+                <property name="cc.msvc.2010" value="true"/>
+              </then>
+            </elseif>
+          </if>
+        </then>
+      </elseif>
+      <else>
+        <property name="cc.compiler" value="g++"/>
+        <property name="cc.g++"      value="true"/>
+        <if>
+          <istrue value="${cc.debug}"/>
+          <then>
+            <property name="cc.g++.debug" value="true"/>
+          </then>
+          <else>
+            <property name="cc.g++.release" value="true"/>
+          </else>
+        </if>
+        <if>
+          <equals arg1="${env.arch}" arg2="x64" trim="true"/>
+          <then>
+            <property name="cc.g++.m64" value="true"/>
+            <property name="cc.g++.x64" value="true"/>
+          </then>
+          <elseif>
+            <equals arg1="${env.arch}" arg2="x86" trim="true"/>
+            <then>
+              <property name="cc.g++.m32" value="true"/>
+              <property name="cc.g++.x86" value="true"/>
+            </then>
+          </elseif>
+         </if>
+      </else>
+    </if>
+    <if>
+      <not>
+        <isset property="cc.linker"/>
+      </not>
+      <then>
+        <property name="cc.linker" value="${cc.compiler}"/>
+      </then>
+    </if>
+
+    <!-- Configure object directory -->
+    <if>
+      <istrue value="${cc.debug}"/>
+      <then>
+        <property name="cc.objdir" value="${build.obj.dir}/${cc.name}"/>
+      </then>
+      <else>
+        <property name="cc.objdir" value="${build.obj.dir}/${cc.name}"/>
+      </else>
+    </if>
+
+    <!-- Configure output file -->
+    <property name="cc.outtype" value="${project.type}"/>
+    <if>
+      <equals arg1="${cc.outtype}" arg2="executable" trim="true"/>
+      <then>
+        <mkdir dir="${build.bin.dir}"/>
+        <property name="cc.outfile" value="${build.bin.dir}/${cc.name}"/>
+      </then>
+      <else>
+        <mkdir dir="${build.lib.dir}"/>
+        <property name="cc.outfile" value="${build.lib.dir}/${cc.name}"/>
+      </else>
+    </if>
+
+    <!-- Configure formatted built type -->
+    <if>
+      <equals arg1="${build.type}" arg2="debug" trim="true"/>
+      <then>
+        <property name="build.type.formatted" value="Debug"/>
+      </then>
+      <else>
+        <property name="build.type.formatted" value="Release"/>
+      </else>
+    </if>
+
+    <!-- Configure versioninfo-related values -->
+    <if>
+      <or>
+        <equals arg1="${cc.outtype}" arg2="static" trim="true"/>
+        <equals arg1="${cc.outtype}" arg2="shared" trim="true"/>
+      </or>
+      <then>
+        <property name="cc.company"     value="${project.company}"/>
+        <property name="cc.description" value="${project.description}"/>
+        <property name="cc.version"     value="${build.version} ${env.arch} ${build.type.formatted}"/>
+        <property name="cc.copyright"   value="${project.copyright}"/>
+        <property name="cc.fileversion" value="${build.version}"/>
+      </then>
+    </if>
+
+    <!-- Configure libraries -->
+    <if>
+      <not>
+        <equals arg1="${project.libs}" arg2="" trim="true"/>
+      </not>
+      <then>
+        <property name="cc.libs" value="${project.libs}"/>
+      </then>
+    </if>
+
+    <!-- Configure library path -->
+    <if>
+      <not>
+        <equals arg1="${project.lib.dir}" arg2="" trim="true"/>
+      </not>
+      <then>
+        <property name="cc.lib.dir" value="${project.lib.dir}"/>
+      </then>
+    </if>
+
+    <!-- Configure linker path -->
+    <if>
+      <equals arg1="${env.LINKER_HOME}" arg2="" trim="true"/>
+      <then>
+        <!-- Use unchanged PATH environment variable -->
+        <property name="project.linker.path" value="${env.PATH}"/>
+      </then>
+      <else>
+        <!-- Prepend path to custom linker -->
+        <property name="project.linker.path" value="${env.LINKER_HOME};${env.PATH}"/>
+      </else>
+    </if>
+
+    <!-- Configure includes -->
+    <if>
+      <isset property="project.include"/>
+      <then>
+        <property name="cc.include" value="${project.include}"/>
+        <path id="cc.include.path" path="${cc.include}"/>
+      </then>
+    </if>
+
+    <!-- Configure source -->
+    <if>
+      <isset property="project.source"/>
+      <then>
+        <property name="cc.source" value="${project.source}"/>
+        <files id="cc.source.files" includes="${cc.source}"/>
+        <filestofileset id="cc.source.fileset" filesrefid="cc.source.files"/>
+      </then>
+    </if>
+
+    <!-- Configure preprocessor macros -->
+    <if>
+      <not>
+        <equals arg1="${project.define}" arg2="" trim="true"/>
+      </not>
+      <then>
+        <property name="cc.define" value="${project.define}"/>
+      </then>
+    </if>
+
+    <mkdir dir="${cc.objdir}"/>
+
+    <!-- quotify copyright -->
+    <if>
+        <isset property="cc.msvc"/>
+      <then>
+        <property name="project.cc.copyright" value="&quot;&quot;${project.copyright}&quot;&quot;"/>
+      </then>
+      <else>
+        <property name="project.cc.copyright" value="&quot;${project.copyright}&quot;"/>
+      </else>
+    </if>
+
+    <!-- Compiler settings used by the cc task -->
+    <compiler id="coh_compiler" exceptions="${cc.exceptions}"
+              multithreaded="${cc.multithreaded}"
+              name="${cc.compiler}"
+              optimize="${cc.optimize}"
+              rtti="${cc.rtti}"
+              warnings="${cc.warnings}">
+      <compilerarg if="cc.g++"          value="-ansi"/>
+      <compilerarg if="cc.g++"          value="-pedantic"/>
+      <compilerarg if="cc.g++"          value="-fno-stack-protector"/>
+      <compilerarg if="cc.g++"          value="-Werror"/>
+      <compilerarg if="cc.g++"          value="-Woverloaded-virtual"/>
+      <compilerarg if="cc.g++"          value="-Wunused"/>
+      <compilerarg if="cc.g++"          value="-Wunused-variable"/>
+      <compilerarg if="cc.g++"          value="-Wunused-parameter"/>
+      <compilerarg if="cc.g++"          value="-Wabi"/>
+      <compilerarg if="cc.g++"          value="-Wsign-compare"/>
+      <compilerarg if="cc.g++"          value="-Wfloat-equal"/>
+      <compilerarg if="cc.g++"          value="-mtune=generic"/>
+      <compilerarg if="cc.g++.m64"      value="-m64"/>
+      <compilerarg if="cc.g++.m32"      value="-m32"/>
+      <compilerarg if="cc.g++.m32"      value="-march=i686"/> <!-- the 32b gcc build requires at least a pentium-pro (to get CAS support), i.e. it won't work on 386 & 486 -->
+      <compilerarg if="cc.c++11"        value="-std=c++0x"/>  <!-- must be set after the other GCC flags -->
+      <compilerarg if="cc.msvc"         value="/Oi" unless="env.arch.x86" />
+      <compilerarg if="cc.msvc"         value="/Oy-"/>
+      <compilerarg if="cc.msvc"         value="/WX"/> <!-- warn as error -->
+      <compilerarg if="cc.msvc"         value="/D_SCL_SECURE_NO_WARNINGS"/>
+      <compilerarg if="cc.msvc"         value="/D_CRT_SECURE_NO_WARNINGS"/>
+      <compilerarg if="cc.msvc"         value="/Zi"/>
+      <compilerarg if="cc.msvc"         value="/bigobj"/>
+      <compilerarg if="cc.stlport"      value="-library=stlport4"/>
+      <compilerarg if="cc.sunpro"       value="-errtags=yes"/>
+      <compilerarg if="cc.sunpro"       value="-errwarn"/>
+      <compilerarg if="cc.sunpro"       value="-erroff=notemsource,inllargeuse,inllargeint"/>
+      <compilerarg if="cc.sunpro"       value="-features=tmplife"/>
+      <compilerarg if="cc.sunpro"       value="-Qoption"/>
+      <compilerarg if="cc.sunpro"       value="ccfe"/>
+      <compilerarg if="cc.sunpro"       value="-features=no%rvalueref"/>
+      <compilerarg if="cc.sunpro"       value="-D_POSIX_PTHREAD_SEMANTICS"/>
+      <compilerarg if="cc.sunpro.m64"   value="-m64"/>
+      <compilerarg if="cc.sunpro.m32"   value="-m32"/>
+      <compilerarg if="env.os.linux"    value="-fabi-version=2"/>
+
+      <defineset if="cc.define" define="${cc.define}">
+          <define name="COH_BUILD_INFO" value="${build.number}"/>
+          <define name="COH_BUILD_TYPE" value="${build.type.formatted}"/>
+          <define name="COH_PRODUCT"    value="${project.description}"/>
+          <define name="COH_VERSION"    value="${project.version}"/>
+          <define name="COH_COPYRIGHT"  value="${project.cc.copyright}"/>
+      </defineset>
+      <defineset if="env.os.windows" define="WIN32"/>
+
+      <fileset if="cc.source" refid="cc.source.fileset"/>
+
+      <includepath if="cc.include">
+        <path refid="cc.include.path"/>
+      </includepath>
+    </compiler>
+
+    <if>
+      <!-- if compileonly is true then invoke cc with no outfile and no linker -->
+      <equals arg1="${cc.compileonly}" arg2="true" trim="true"/>
+      <then>
+        <!-- compile only -->
+        <echo>Compiling ${cc.source} with ${cc.compiler}</echo>
+        <cc debug="${cc.debug}"
+            dependencydepth="${cc.dependencydepth}"
+            failonerror="true"
+            objdir="${cc.objdir}"
+            rebuild="${cc.rebuild}"
+            relentless="${cc.relentless}">
+          <compiler refid="coh_compiler" />
+        </cc>
+      </then>
+      <else>
+        <!-- compile and link -->
+        <echo>Compiling ${cc.source} with ${cc.compiler}, linking with ${cc.linker}</echo>
+        <cc debug="${cc.debug}"
+            dependencydepth="${cc.dependencydepth}"
+            failonerror="true"
+            objdir="${cc.objdir}"
+            outfile="${cc.outfile}"
+            outtype="${cc.outtype}"
+            rebuild="${cc.rebuild}"
+            relentless="${cc.relentless}"
+            runtime="${cc.runtime}"
+            subsystem="${cc.subsystem}">
+          <compiler refid="coh_compiler" />
+          <compiler if="env.os.windows" name="msrc"/>
+          <linker incremental="${cc.incremental}" name="${cc.linker}">
+            <env key="PATH" path="${project.linker.path}"/>
+            <linkerarg if="env.os.linux"   value="--hash-style=sysv"/>
+            <linkerarg if="env.os.linux"   value="--export-dynamic"/>
+            <linkerarg if="env.os.windows" value="/expectedoutputsize:100000000"/>
+            <linkerarg if="cc.g++.m64"     value="-m64"/>
+            <linkerarg if="cc.g++.m32"     value="-m32"/>
+            <linkerarg if="cc.stlport"     value="-library=stlport4"/>
+            <linkerarg if="cc.sunpro.m64"  value="-m64"/>
+            <linkerarg if="cc.sunpro.m32"  value="-m32"/>
+            <!-- generate PDB for release builds -->
+            <linkerarg if="cc.msvc.release" value="/DEBUG"/>
+            <linkerarg if="cc.msvc.release" value="/OPT:ICF"/>
+            <linkerarg if="cc.msvc.release" value="/OPT:NOREF"/>
+            <libset if="cc.libs" dir="${cc.lib.dir}" libs="${cc.libs}"/>
+            <syslibset if="env.os.linux"   libs="pthread dl"/>
+            <syslibset if="env.cc.sunpro"  libs="demangle"/>
+            <syslibset if="env.os.solaris" libs="demangle socket posix4"/>
+            <syslibset if="env.os.windows" libs="ws2_32 Advapi32"/>
+          </linker>
+          <versioninfo if="cc.description"
+                       fileversion="${cc.fileversion}"
+                       companyname="${cc.company}"
+                       filedescription="${cc.description}"
+                       productname="${cc.description}"
+                       productversion="${cc.version}"
+                       legalcopyright="${cc.copyright}"/>
+        </cc>
+      </else>
+    </if>
+  </target>
+
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global project targets                                              -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Display project help -->
+  <target name="help" description="Display project help.">
+    <java classname="org.apache.tools.ant.Main" failonerror="true">
+      <arg line="-projecthelp"/>
+    </java>
+  </target>
+
+  <!-- Bootstrap -->
+  <target name="bootstrap" description="Obtain Ivy." unless="ivy-exists">
+    <antcall target="banner">
+      <param name="banner.message" value="Obtaining Ivy"/>
+    </antcall>
+    <get src ="${ivy.artifactory.server.public}/${ivy.path.public}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"
+         dest="${ivy.jar}"/>
+  </target>
+
+  <!-- Init -->
+  <target name="init" description="Initialize build and test environment." depends="bootstrap">
+    <antcall target="banner">
+      <param name="banner.message" value="Initializing Ivy"/>
+    </antcall>
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="ivy-${ivy.version}.jar"/>
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant"
+             classpathref="ivy.lib.path"/>
+  </target>
+
+  <!-- Resolve dependencies -->
+  <target name="resolve" description="Resolve dependencies." depends="init">
+    <antcall target="banner">
+      <param name="banner.message" value="Resolving dependencies"/>
+    </antcall>
+    <ivy:settings file   ="${prj.dir}/ivy-settings.xml"/>
+    <ivy:resolve  file   ="${prj.dir}/ivy.xml"/>
+    <ivy:retrieve pattern="${lib.dir}/[artifact].[ext]"/>
+  </target>
+
+  <!-- Compile project source  -->
+  <target name="compile"
+    description="Compile project source.">
+    <antcall target="banner">
+      <param name="banner.message" value="Compiling project: ${project.name}"/>
+    </antcall>
+
+    <if>
+      <isset property="project.source"/>
+      <then>
+        <antcall target="cc">
+          <param name="cc.dependencydepth" value="1"/>
+        </antcall>
+      </then>
+    </if>
+  </target>
+
+  <!-- Compile and link project source  -->
+  <target name="build" description="Compile and link project source.">
+    <antcall target="banner">
+      <param name="banner.message" value="Building project: ${project.name}"/>
+    </antcall>
+
+    <if>
+      <isset property="project.source"/>
+      <then>
+        <antcall target="cc"/>
+      </then>
+    </if>
+  </target>
+
+  <!-- Remove project build artifacts -->
+  <target name="clean" description="Remove all project build artifacts.">
+    <antcall target="banner">
+      <param name="banner.message" value="Cleaning project: ${project.name}"/>
+    </antcall>
+
+    <if>
+      <isset property="project.source"/>
+      <then>
+        <!-- Remove object files -->
+        <delete dir="${build.obj.dir}/${project.name}" failonerror="false"/>
+
+        <if>
+          <equals arg1="${project.type}" arg2="executable" trim="true"/>
+          <then>
+            <!-- Remove project executable -->
+            <delete failonerror="false" includeemptydirs="true">
+              <fileset dir="${build.bin.dir}">
+                <include name="${build.artifact}"/>
+                <include name="${build.artifact}.*"/>
+                <include name="history.xml"/>
+              </fileset>
+            </delete>
+          </then>
+          <else>
+            <!-- Remove project library -->
+            <delete failonerror="false" includeemptydirs="true">
+              <fileset dir="${build.lib.dir}">
+                <include name="${build.artifact}.*"/>
+                <include name="lib${build.artifact}.*"/>
+                <include name="history.xml"/>
+              </fileset>
+            </delete>
+          </else>
+        </if>
+      </then>
+    </if>
+  </target>
+
+  <!-- Copy all project build artifacts to the distribution directory -->
+  <target name="dist" description="Create the project distribution.">
+    <antcall target="banner">
+      <param name="banner.message"
+             value="Creating distribution for project: ${project.name}"/>
+    </antcall>
+
+    <if>
+      <isset property="project.source"/>
+      <then>
+        <if>
+          <equals arg1="${project.type}" arg2="executable" trim="true"/>
+          <then>
+            <!-- Copy project executable -->
+            <copy preservelastmodified="true" todir="${dist.bin.dir}">
+              <fileset dir="${build.bin.dir}">
+                <include name="${project.name}"/>
+                <include name="${project.name}.*"/>
+                <exclude name="*.manifest"/>
+                <exclude name="*.pdb"/>
+              </fileset>
+            </copy>
+          </then>
+          <else>
+            <!-- Copy project library -->
+            <copy preservelastmodified="true" todir="${dist.lib.dir}">
+              <fileset dir="${build.lib.dir}">
+                <include name="${build.artifact}.*"/>
+                <include name="lib${build.artifact}.*"/>
+                <exclude name="*.manifest"/>
+                <exclude name="*.exp"/>
+              </fileset>
+            </copy>
+          </else>
+        </if>
+      </then>
+    </if>
+  </target>
+</project>

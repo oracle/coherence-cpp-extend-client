@@ -1,0 +1,501 @@
+<?xml version='1.0'?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<coherence xml-override="{tangosol.coherence.override /tangosol-coherence-override-{mode}.xml}">
+  <cluster-config>
+    <member-identity>
+      <!--
+      Note: All members of the cluster must specify the same cluster name in
+      order to be allowed to join the cluster.
+      -->
+      <cluster-name system-property="tangosol.coherence.cluster"></cluster-name>
+      <site-name    system-property="tangosol.coherence.site"></site-name>
+      <rack-name    system-property="tangosol.coherence.rack"></rack-name>
+      <machine-name system-property="tangosol.coherence.machine"></machine-name>
+      <process-name system-property="tangosol.coherence.process"></process-name>
+      <member-name  system-property="tangosol.coherence.member"></member-name>
+      <role-name    system-property="tangosol.coherence.role"></role-name>
+      <priority     system-property="tangosol.coherence.priority"></priority>
+    </member-identity>
+
+    <unicast-listener>
+      <!--
+      Note: Specifying one or more "well known" addresses (WKA) will disable
+      all multicast communication. In this case, for a member to join the cluster
+      it will either have to be a WKA or there will have to be at least one WKA
+      member running.
+      -->
+      <well-known-addresses>
+        <socket-address id="1">
+          <address system-property="tangosol.coherence.wka"></address>
+          <port system-property="tangosol.coherence.wka.port">8088</port>
+        </socket-address>
+      </well-known-addresses>
+
+      <!--
+      Note: The "localhost" setting may not work on systems that define
+      localhost as the loopback address; in that case, specify the machine
+      name or the specific IP address.
+      -->
+      <address system-property="tangosol.coherence.localhost">localhost</address>
+
+      <port system-property="tangosol.coherence.localport">8088</port>
+      <port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>
+      <packet-buffer>
+        <maximum-packets>1428</maximum-packets>
+      </packet-buffer>
+      <priority>8</priority>
+    </unicast-listener>
+
+    <multicast-listener>
+      <address system-property="tangosol.coherence.clusteraddress">224.3.3.0</address>
+      <port system-property="tangosol.coherence.clusterport">32381</port>
+
+      <!--
+      Note: For production use, this value should be set to the lowest integer
+      value that works. On a single server cluster, it should work at "0"; on
+      a simple switched backbone, it should work at "1"; on an advanced backbone
+      with intelligent switching, it may require a value of "2" or more. Setting
+      the value too high can utilize unnecessary bandwidth on other LAN segments
+      and can even cause the OS or network devices to disable multicast traffic.
+      -->
+      <time-to-live system-property="tangosol.coherence.ttl">4</time-to-live>
+
+      <packet-buffer>
+        <maximum-packets>64</maximum-packets>
+      </packet-buffer>
+      <priority>8</priority>
+
+      <!--
+      Note: For production use, the recommended value is 30000.
+      -->
+      <join-timeout-milliseconds>30000</join-timeout-milliseconds>
+
+      <multicast-threshold-percent>25</multicast-threshold-percent>
+    </multicast-listener>
+
+    <tcp-ring-listener>
+      <!--
+      Note: When encountering problems getting Coherence running on a system,
+      we suggest that this value be set to "false" until all other issues are
+      resolved in order to simplify trouble-shooting.
+      -->
+      <enabled system-property="tangosol.coherence.tcpring">true</enabled>
+
+      <maximum-socket-closed-exceptions>2</maximum-socket-closed-exceptions>
+      <priority>6</priority>
+    </tcp-ring-listener>
+
+    <shutdown-listener>
+      <!--
+      Note: For production use, the suggested value is "none" (or "false")
+      unless testing has verified that the behavior on external shutdown is
+      exactly what is desired.
+      -->
+      <enabled system-property="tangosol.coherence.shutdownhook">force</enabled>
+    </shutdown-listener>
+
+    <packet-speaker>
+      <priority>8</priority>
+    </packet-speaker>
+
+    <packet-publisher>
+      <packet-size>
+        <maximum-length>1468</maximum-length>
+        <preferred-length>1468</preferred-length>
+      </packet-size>
+      <packet-pool>
+        <maximum-packets>2048</maximum-packets>
+      </packet-pool>
+      <packet-delivery>
+        <resend-milliseconds>200</resend-milliseconds>
+
+        <!--
+        Note: For production use, the recommended value is the greater of 60000
+        and two times the maximum expected full GC duration.
+        -->
+        <timeout-milliseconds>60000</timeout-milliseconds>
+
+        <heartbeat-milliseconds>1000</heartbeat-milliseconds>
+        <flow-control>
+          <enabled>true</enabled>
+          <pause-detection>
+            <maximum-packets>16</maximum-packets>
+          </pause-detection>
+          <outstanding-packets>
+            <maximum-packets>4096</maximum-packets>
+            <minimum-packets>64</minimum-packets>
+          </outstanding-packets>
+        </flow-control>
+        <packet-bundling>
+          <maximum-deferral-time>1us</maximum-deferral-time>
+          <aggression-factor>0</aggression-factor>
+        </packet-bundling>
+      </packet-delivery>
+      <notification-queueing>
+        <ack-delay-milliseconds>16</ack-delay-milliseconds>
+        <nack-delay-milliseconds>1</nack-delay-milliseconds>
+      </notification-queueing>
+      <burst-mode>
+        <maximum-packets>0</maximum-packets>
+        <pause-milliseconds>10</pause-milliseconds>
+      </burst-mode>
+      <traffic-jam>
+        <maximum-packets>8192</maximum-packets>
+        <pause-milliseconds>10</pause-milliseconds>
+      </traffic-jam>
+      <packet-buffer>
+        <maximum-packets>32</maximum-packets>
+      </packet-buffer>
+      <priority>6</priority>
+    </packet-publisher>
+
+    <incoming-message-handler>
+      <maximum-time-variance>16</maximum-time-variance>
+      <packet-pool>
+        <maximum-packets>2048</maximum-packets>
+      </packet-pool>
+      <use-nack-packets>true</use-nack-packets>
+      <priority>7</priority>
+    </incoming-message-handler>
+
+    <outgoing-message-handler>
+      <!--
+      Note: Uncomment the following section to activate gzip compression
+      for all network messages, which can help substantially with WAN
+      and low-bandwidth networks; for more information, see:
+         http://www.tangosol.com/faq-coherence.jsp#filterconfig
+      -->
+      <use-filters>
+        <!-- <filter-name>gzip</filter-name> -->
+      </use-filters>
+    </outgoing-message-handler>
+
+    <authorized-hosts>
+      <host-address></host-address>
+      <host-range>
+        <from-address></from-address>
+        <to-address></to-address>
+      </host-range>
+    </authorized-hosts>
+
+    <services>
+      <service id="1">
+        <service-type>ReplicatedCache</service-type>
+        <service-component>ReplicatedCache</service-component>
+        <use-filters>
+          <filter-name/>
+        </use-filters>
+        <init-params>
+          <init-param id="1">
+            <param-name>standard-lease-milliseconds</param-name>
+            <param-value>0</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>lease-granularity</param-name>
+            <param-value>thread</param-value>
+          </init-param>
+          <init-param id="3">
+            <param-name>mobile-issues</param-name>
+            <param-value>false</param-value>
+          </init-param>
+          <init-param id="4">
+            <param-name>request-timeout</param-name>
+            <param-value system-property="tangosol.coherence.replicated.request.timeout"></param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="2">
+        <service-type>OptimisticCache</service-type>
+        <service-component>ReplicatedCache.Optimistic</service-component>
+        <use-filters>
+          <filter-name/>
+        </use-filters>
+        <init-params>
+          <init-param id="1">
+            <param-name>request-timeout</param-name>
+            <param-value system-property="tangosol.coherence.optimistic.request.timeout"></param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="3">
+        <service-type>DistributedCache</service-type>
+        <service-component>DistributedCache</service-component>
+        <use-filters>
+          <filter-name/>
+        </use-filters>
+        <init-params>
+          <init-param id="1">
+            <param-name>standard-lease-milliseconds</param-name>
+            <param-value>0</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>lease-granularity</param-name>
+            <param-value>thread</param-value>
+          </init-param>
+          <init-param id="3">
+            <param-name>partition-count</param-name>
+            <param-value>257</param-value>
+          </init-param>
+          <init-param id="4">
+            <param-name>local-storage</param-name>
+            <param-value system-property="tangosol.coherence.distributed.localstorage">true</param-value>
+          </init-param>
+          <init-param id="5">
+            <param-name>transfer-threshold</param-name>
+            <param-value system-property="tangosol.coherence.distributed.transfer">512</param-value>
+          </init-param>
+          <init-param id="6">
+            <param-name>backup-count</param-name>
+            <param-value system-property="tangosol.coherence.distributed.backupcount">1</param-value>
+          </init-param>
+          <init-param id="7">
+            <param-name>backup-storage/type</param-name>
+            <param-value system-property="tangosol.coherence.distributed.backup">on-heap</param-value>
+          </init-param>
+          <init-param id="8">
+            <param-name>thread-count</param-name>
+            <param-value system-property="tangosol.coherence.distributed.threads">0</param-value>
+          </init-param>
+          <init-param id="9">
+            <param-name>key-associator/class-name</param-name>
+            <param-value></param-value>
+          </init-param>
+          <init-param id="10">
+            <param-name>key-partitioning/class-name</param-name>
+            <param-value></param-value>
+          </init-param>
+          <init-param id="11">
+            <param-name>task-hung-threshold</param-name>
+            <param-value system-property="tangosol.coherence.distributed.task.hung"></param-value>
+          </init-param>
+          <init-param id="12">
+            <param-name>task-timeout</param-name>
+            <param-value system-property="tangosol.coherence.distributed.task.timeout"></param-value>
+          </init-param>
+          <init-param id="13">
+            <param-name>request-timeout</param-name>
+            <param-value system-property="tangosol.coherence.distributed.request.timeout"></param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="4">
+        <service-type>Invocation</service-type>
+        <service-component>InvocationService</service-component>
+        <use-filters>
+          <filter-name/>
+        </use-filters>
+        <init-params>
+          <init-param id="1">
+            <param-name>thread-count</param-name>
+            <param-value system-property="tangosol.coherence.invocation.threads">0</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>task-hung-threshold</param-name>
+            <param-value system-property="tangosol.coherence.invocation.task.hung"></param-value>
+          </init-param>
+          <init-param id="3">
+            <param-name>task-timeout</param-name>
+            <param-value system-property="tangosol.coherence.invocation.task.timeout"></param-value>
+          </init-param>
+          <init-param id="4">
+            <param-name>request-timeout</param-name>
+            <param-value system-property="tangosol.coherence.invocation.request.timeout"></param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="5">
+        <service-type>LocalCache</service-type>
+        <service-component>LocalCache</service-component>
+        <init-params>
+          <init-param id="1">
+            <param-name>lock-enforce</param-name>
+            <param-value>false</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>lock-wait</param-name>
+            <param-value>0</param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="6">
+        <service-type>SimpleCache</service-type>
+        <service-component>SimpleCache</service-component>
+      </service>
+
+      <service id="7">
+        <service-type>Proxy</service-type>
+        <service-component>ProxyService</service-component>
+        <use-filters>
+          <filter-name/>
+        </use-filters>
+        <init-params>
+          <init-param id="1">
+            <param-name>acceptor-config</param-name>
+            <param-value></param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>proxy-config</param-name>
+            <param-value></param-value>
+          </init-param>
+          <init-param id="3">
+            <param-name>thread-count</param-name>
+            <param-value system-property="tangosol.coherence.proxy.threads">0</param-value>
+          </init-param>
+          <init-param id="4">
+            <param-name>task-hung-threshold</param-name>
+            <param-value system-property="tangosol.coherence.proxy.task.hung"></param-value>
+          </init-param>
+          <init-param id="5">
+            <param-name>task-timeout</param-name>
+            <param-value system-property="tangosol.coherence.proxy.task.timeout"></param-value>
+          </init-param>
+          <init-param id="6">
+            <param-name>request-timeout</param-name>
+            <param-value system-property="tangosol.coherence.proxy.request.timeout"></param-value>
+          </init-param>
+
+        </init-params>
+      </service>
+
+      <service id="8">
+        <service-type>RemoteCache</service-type>
+        <service-component>RemoteCache</service-component>
+        <init-params>
+          <init-param id="1">
+            <param-name>initiator-config</param-name>
+            <param-value></param-value>
+          </init-param>
+        </init-params>
+      </service>
+
+      <service id="9">
+        <service-type>RemoteInvocation</service-type>
+        <service-component>RemoteInvocation</service-component>
+        <init-params>
+          <init-param id="1">
+            <param-name>initiator-config</param-name>
+            <param-value></param-value>
+          </init-param>
+        </init-params>
+      </service>
+    </services>
+
+    <filters>
+      <filter id="1">
+        <filter-name>gzip</filter-name>
+        <filter-class>com.tangosol.net.CompressionFilter</filter-class>
+        <init-params>
+          <init-param id="1">
+            <param-name>strategy</param-name>
+            <param-value>gzip</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>level</param-name>
+            <param-value>default</param-value>
+          </init-param>
+        </init-params>
+      </filter>
+
+      <filter id="2">
+        <filter-name>symmetric-encryption</filter-name>
+        <filter-class>com.tangosol.net.security.PasswordBasedEncryptionFilter</filter-class>
+        <init-params>
+          <init-param id="1">
+            <param-name>password</param-name>
+            <param-value system-property="tangosol.coherence.security.password"></param-value>
+          </init-param>
+        </init-params>
+      </filter>
+
+      <filter id="3">
+        <filter-name>pkcs-encryption</filter-name>
+        <filter-class>com.tangosol.net.security.ClusterEncryptionFilter</filter-class>
+        <init-params>
+          <init-param id="1">
+            <param-name>store</param-name>
+            <param-value system-property="tangosol.coherence.security.keystore">./keystore.jks</param-value>
+          </init-param>
+          <init-param id="2">
+            <param-name>keyAlias</param-name>
+            <param-value>local</param-value>
+          </init-param>
+          <init-param id="3">
+            <param-name>keyPassword</param-name>
+            <param-value system-property="tangosol.coherence.security.password"></param-value>
+          </init-param>
+        </init-params>
+      </filter>
+    </filters>
+  </cluster-config>
+
+  <logging-config>
+    <destination system-property="tangosol.coherence.log">stderr</destination>
+    <severity-level system-property="tangosol.coherence.log.level">5</severity-level>
+    <message-format>{date} {product} {version} &lt;{level}&gt; (thread={thread}, member={member}): {text}</message-format>
+    <character-limit system-property="tangosol.coherence.log.limit">1048576</character-limit>
+  </logging-config>
+
+  <configurable-cache-factory-config>
+    <class-name>com.tangosol.net.DefaultConfigurableCacheFactory</class-name>
+    <init-params>
+      <init-param>
+        <param-type>java.lang.String</param-type>
+        <param-value system-property="tangosol.coherence.cacheconfig">coherence-cache-config.xml</param-value>
+      </init-param>
+    </init-params>
+  </configurable-cache-factory-config>
+
+  <management-config>
+    <!--
+    Note: Setting this value to 'local-only', 'remote-only or 'all' will require the
+    javax.management.* classes be available on the classpath.
+    -->
+    <managed-nodes system-property="tangosol.coherence.management">none</managed-nodes>
+
+    <!--
+    Note: Setting this value to 'true' will require the Enterprise Edition license.
+    -->
+    <allow-remote-management system-property="tangosol.coherence.management.remote">false</allow-remote-management>
+
+    <read-only system-property="tangosol.coherence.management.readonly">false</read-only>
+    <default-domain-name></default-domain-name>
+    <service-name>Management</service-name>
+  </management-config>
+
+  <security-config>
+    <enabled system-property="tangosol.coherence.security">false</enabled>
+    <login-module-name>Coherence</login-module-name>
+    <access-controller>
+      <class-name>com.tangosol.net.security.DefaultController</class-name>
+      <init-params>
+        <init-param id="1">
+          <param-type>java.io.File</param-type>
+          <param-value system-property="tangosol.coherence.security.keystore"></param-value>
+        </init-param>
+        <init-param id="2">
+          <param-type>java.io.File</param-type>
+          <param-value system-property="tangosol.coherence.security.permissions"></param-value>
+        </init-param>
+      </init-params>
+    </access-controller>
+    <callback-handler>
+      <class-name/>
+    </callback-handler>
+  </security-config>
+
+  <license-config>
+    <license-path system-property="tangosol.coherence.licensepath"></license-path>
+    <edition-name system-property="tangosol.coherence.edition"></edition-name>
+    <license-mode system-property="tangosol.coherence.mode"></license-mode>
+  </license-config>
+</coherence>

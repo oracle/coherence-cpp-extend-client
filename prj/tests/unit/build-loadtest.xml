@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence library.                                                    -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="loadtests" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.include" value="include,include/public,tools/internal/common/cxxtest"/>
+  <property name="project.libs"    value="coherence"/>
+  <property name="project.source"  value="build/src/loadtest/**/*.cpp"/>
+  <property name="project.type"    value="executable"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties based on standard properties                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="tests.dir"       value="${env.DEV_ROOT}/tests"/>
+  <property name="cxxtest.dir"     value="${env.DEV_ROOT}/tools/internal/common/cxxtest"/>
+  <property name="testheaders.dir" value="${tests.dir}/loadcxxtest"/>
+  <property name="testsrc.dir"     value="${build.src.dir}/loadtest/"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="generate" description="Generate cxxtest source from headers.">
+    <!-- write out the banner -->
+    <antcall target="banner">
+      <param name="banner.message" value="Generating source for: ${project.name}"/>
+    </antcall>
+
+    <!-- setup perl location -->
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+        <property name="perl" value="${tools.platform.dir}/perl/bin/perl"/>
+      </then>
+      <else>
+        <property name="perl" value="perl"/>
+      </else>
+    </if>
+
+    <!-- generate source from test headers -->
+    <!-- TODO: add a dependecy check on sources to only regenerate if the
+         sources change -->
+    <mkdir dir="${testsrc.dir}"/>
+    <apply executable="${perl}" parallel="true">
+      <arg value="-w"/>
+      <arg value="${cxxtest.dir}/cxxtestgen.pl"/>
+      <arg value="--runner=StdioPrinter"/>
+      <arg value="-o"/>
+      <arg value="${testsrc.dir}/${project.name}.cpp"/>
+      <fileset dir="${testheaders.dir}">
+        <include name="**/*.hpp"/>
+      </fileset>
+    </apply>
+  </target>
+
+  <target name="build" description="Compile and link test source."
+          depends="generate">
+    <antcall target="build-import.build">
+      <param name="src.root" value="${build.dir}"/>
+      <param name="project.source"
+        value="src/${env.os}/${env.arch}/${build.type}/loadtest/loadtests.cpp"/>
+    </antcall>
+  </target>
+
+  <target name="test" description="Run the unit tests.">
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+        <exec executable="${build.bin.dir}/${project.name}" failonerror="true">
+          <!-- environment variables on Windows are case sensitive! -->
+          <env key="PATH" path="${build.lib.dir};${env.PATH}"/>
+          <env key="Path" path="${build.lib.dir};${env.Path}"/>
+        </exec>
+      </then>
+      <elseif>
+        <isset property="env.os.osx"/>
+        <then>
+          <exec executable="${build.bin.dir}/${project.name}" failonerror="true">
+            <env key="DYLD_LIBRARY_PATH" path="${build.lib.dir}"/>
+          </exec>
+        </then>
+      </elseif>
+      <else>
+        <exec executable="${build.bin.dir}/${project.name}" failonerror="true">
+          <env key="LD_LIBRARY_PATH" path="${build.lib.dir}"/>
+        </exec>
+      </else>
+    </if>
+  </target>
+
+  <target name="clean" description="Clean the tests">
+    <antcall target="build-import.clean"/>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="${build.src.dir}/loadtest">
+        <include name="**/*.cpp"/>
+      </fileset>
+    </delete>
+  </target>
+
+</project>

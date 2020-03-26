@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence sanka launcher.                                             -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="sanka" default="help" basedir=".">
+
+  <property name="project.name"   value="sanka"/>
+  <property name="project.type"   value="executable"/>
+  <property name="build.artifact" value="${project.name}"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../build-import.xml"/>
+
+  <property name="project.source" value="${src.dir}/sanka/*.cpp"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="build" description="Compile and link project source.">
+    <antcall target="build-import.build"/>
+  </target>
+
+  <target name="clean" description="Remove all project build artifacts.">
+    <antcall target="build-import.clean"/>
+  </target>
+
+  <target name="dist" description="Create the project distribution.">
+    <if>
+      <equals arg1="${build.type}" arg2="release" trim="true"/>
+      <then>
+        <antcall target="build-import.dist"/>
+      </then>
+    </if>
+  </target>
+</project>

@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence library.                                                    -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="coherence" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.define" value="COH_BUILD"/>
+  <property name="project.type"   value="shared"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties based on imports                                 -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.source" value="${src.dir}/coherence/**/*.cpp"/>
+  <property name="project.include"
+            value="${include.dir}:${include.dir}/public:${build.include.dir}/public"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Compile and link project source  -->
+  <target name="generate-namespace-includes"
+    description="Generate namespace include files.">
+    <mkdir dir="${build.include.dir}/public"/>
+
+    <propertyregex property="build.include.dir.unix"
+                   input="${build.include.dir}"
+                   regexp="\\" replace="/"
+                   defaultvalue="${build.include.dir}"/>
+    <uptodate property="generate.not.required">
+      <mapper type="regexp" from="^(.*)([^/\\]*)[/\\][^/\\]*\.hpp$$"
+              to="${build.include.dir.unix}/public/\1\2.ns"/>
+      <srcfiles dir="${include.dir}/public" includes="**/*.hpp"/>
+    </uptodate>
+
+    <if>
+      <not>
+        <isset property="generate.not.required"/>
+      </not>
+      <then>
+        <antcall target="banner">
+          <param name="banner.message"
+                 value="Generating namespace headers for project: ${project.name}"/>
+        </antcall>
+        <generate-namespace-includes root="${include.dir}/public"
+                                     todir="${build.include.dir}/public"/>
+      </then>
+    </if>
+  </target>
+
+  <!-- Compile and link project source  -->
+  <target name="build" description="Compile and link project source."
+          depends="generate-namespace-includes">
+    <!-- Call "super.build()" -->
+    <antcall target="build-import.build"/>
+  </target>
+
+  <target name="clean" description="Remove all project build artifacts.">
+    <!-- Call "super.clean()" -->
+    <antcall target="build-import.clean"/>
+
+    <if>
+      <not>
+        <isset property="clean.skipincludes"/>
+      </not>
+      <then>
+        <delete failonerror="false" includeemptydirs="true">
+          <fileset dir="${build.include.dir}/public">
+            <include name="coherence/**/*.ns"/>
+          </fileset>
+        </delete>
+      </then>
+    </if>
+  </target>
+
+  <target name       ="dist"
+          description="Create the project distribution."
+          depends    ="resolve">
+    <!-- Call "super.dist()" -->
+    <antcall target="build-import.dist"/>
+
+    <if>
+      <not>
+        <isset property="dist.libonly"/>
+      </not>
+      <then>
+        <!-- Copy public header files to distribution -->
+        <copy preservelastmodified="true" overwrite="true" todir="${dist.include.dir}">
+          <fileset dir="${include.dir}/public">
+            <include name="coherence/**/*.hpp"/>
+            <exclude name="coherence/**/namespace.hpp"/>
+          </fileset>
+          <fileset dir="${build.include.dir}/public">
+            <include name="coherence/**/*.ns"/>
+          </fileset>
+        </copy>
+
+        <!-- Create the oPatch version number from the Coherence version -->
+        <copy tofile="${dist.version.dir}/product.xml" file="product.xml">
+          <filterset>
+            <filter token="VERSION" value="${build.version}.0"/>
+          </filterset>
+        </copy>
+      </then>
+    </if>
+  </target>
+</project>
