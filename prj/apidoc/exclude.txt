@@ -1,0 +1,25 @@
+// Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+//
+// Licensed under the Universal Permissive License v 1.0 as shown at
+// http://oss.oracle.com/licenses/upl.
+
+// Files that are not javadoc'ed
+// Entries are files that are excluded from generation.
+// Add new files anywhere in the list.
+
+coherence/lang/abstract_spec.hpp
+coherence/lang/ChainedHandleElement.hpp
+coherence/lang/class_spec.hpp
+coherence/lang/cloneable_spec.hpp
+coherence/lang/compatibility.hpp
+coherence/lang/interface_spec.hpp
+coherence/lang/lang_spec.hpp
+coherence/lang/LifeCycle.hpp
+coherence/lang/ObjectArray.hpp
+coherence/lang/throwable_spec.hpp
+coherence/native/NativeAtomic32.hpp
+coherence/native/NativeAtomic64.hpp
+coherence/native/namespace.hpp
+coherence/stl/adapter_map.hpp
+coherence/util/ArrayList.hpp
+coherence/util/HashMap.hpp

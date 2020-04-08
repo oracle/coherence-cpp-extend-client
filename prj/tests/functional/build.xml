@@ -1,0 +1,354 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence library.                                                    -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="tests" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.type"   value="executable"/>
+  <property name="project.runner" value="StdioPrinter"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../../build-import.xml"/>
+  <import file="functest-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties based on standard properties                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <if>
+    <isset property="test.mixed"/>
+    <then>
+      <!-- Build debug versions of the tests using the release version of the
+           coherence library -->
+      <property name="local.libs" value="coherence"/>
+      <property name="product.include.dir"
+                value="${build.dir}/include/${env.os}/${env.arch}/release/public"/>
+      <property name="product.lib.dir"
+                  value="${build.dir}/lib/${env.os}/${env.arch}/release"/>
+      <mkdir dir="${build.lib.dir}"/>
+    </then>
+    <else>
+      <condition property="local.libs" value="coherence-debug">
+        <equals arg1="${build.type}" arg2="debug" trim="true"/>
+      </condition>
+      <condition property="local.libs" value="coherence">
+        <equals arg1="${build.type}" arg2="release" trim="true"/>
+      </condition>
+      <property name="product.include.dir" value="${build.include.dir}/public"/>
+      <property name="product.lib.dir"     value="${build.lib.dir}"/>
+    </else>
+  </if>
+
+  <property name="project.include" value="${tests.dir}/include"/>
+
+  <!-- Location of the perl executable -->
+  <if>
+    <isset property="env.os.windows"/>
+    <then>
+      <if>
+        <isset property="env.arch.x64"/>
+        <then>
+          <property name="perl.vmlauncher" value="false"/>
+        </then>
+        <else>
+          <property name="perl.vmlauncher" value="true"/>
+        </else>
+      </if>
+      <property name="perl.exe" value="${tools.platform.dir}/perl/bin/perl"/>
+    </then>
+    <else>
+      <property name="perl.exe" value="perl"/>
+      <property name="perl.vmlauncher" value="true"/>
+    </else>
+  </if>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Helper targets                                                      -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Iterate over each source sub-directory, calling a specified target -->
+  <target name="tests.loop">
+    <if>
+      <!-- To run a single functional test, specify the test name in the
+           mytest property. Case sensitive.
+           e.g. "ant -Dmytest=util clean build test" -->
+      <isset property="mytest"/>
+        <then>
+           <antcall target="${target.name}">
+             <param name="test.dir"  value="${tests.dir}/functional/coherence/${mytest}"/>
+             <param name="test.name" value="func-test-${mytest}"/>
+           </antcall>
+        </then>
+        <else>
+          <for param="dir">
+            <path>
+              <dirset dir="${tests.dir}/functional/coherence" includes="*"/>
+           </path>
+           <sequential>
+             <!-- Source directory name -->
+             <propertyregex override="true"
+               property="dir.name"
+               input="@{dir}"
+               regexp="(.*[\\/])(.*)$"
+               select="\2"/>
+
+             <antcall target="${target.name}">
+               <param name="test.dir"  value="@{dir}"/>
+               <param name="test.name" value="func-test-${dir.name}"/>
+             </antcall>
+           </sequential>
+         </for>
+       </else>
+    </if>
+  </target>
+
+  <!-- Generate sub-target -->
+  <target name="_generate">
+    <mkdir dir="${build.src.dir}/${test.name}"/>
+
+    <uptodate property="generate.not.required"
+      targetfile="${build.src.dir}/${test.name}/${test.name}.cpp">
+      <srcfiles dir="${test.dir}" includes="**/*.hpp"/>
+    </uptodate>
+
+    <if>
+      <not>
+        <isset property="generate.not.required"/>
+      </not>
+      <then>
+        <antcall target="banner">
+          <param name="banner.message"
+            value="Generating source for: ${test.name}"/>
+        </antcall>
+        <apply executable="${perl.exe}" parallel="true" vmlauncher="${perl.vmlauncher}">
+          <arg value="-w"/>
+          <arg value="${tools.common.dir}/cxxtest/cxxtestgen.pl"/>
+          <arg value="--runner=${project.runner}"/>
+          <arg value="-o"/>
+          <arg value="${build.src.dir}/${test.name}/${test.name}.cpp"/>
+          <fileset dir="${test.dir}">
+            <include name="**/*.hpp"/>
+          </fileset>
+        </apply>
+      </then>
+    </if>
+  </target>
+
+  <!-- Build sub-target -->
+  <target name="_build">
+    <uptodate property="build.not.required"
+              targetfile="${build.bin.dir}/${test.name}">
+      <srcfiles file="${build.src.dir}/${test.name}/${test.name}.cpp"/>
+    </uptodate>
+
+    <if>
+      <not>
+        <isset property="build.not.required"/>
+      </not>
+      <then>
+        <antcall target="build-import.build">
+          <param name="project.name"   value="${test.name}"/>
+          <param name="project.libs"   value="${local.libs}"/>
+          <param name="project.lib.dir" value="${product.lib.dir}"/>
+          <param name="build.artifact" value="${test.name}"/>
+          <param name="project.include"
+                 value="${include.dir}:${include.dir}/public:${product.include.dir}:${tools.common.dir}/cxxtest:${tests.dir}/common/include"/>
+          <param name="project.source"
+                 value="${tests.dir}/common/src/cpp/coherence/tests/**/*.cpp,${build.src.dir}/${test.name}/${test.name}.cpp"/>
+        </antcall>
+      </then>
+    </if>
+  </target>
+
+  <!-- Clean sub-target -->
+  <target name="_clean">
+    <antcall target="build-import.clean">
+      <param name="project.name" value="${test.name}"/>
+      <param name="project.source"
+             value="${build.src.dir}/${test.name}/${test.name}.cpp"/>
+    </antcall>
+
+    <delete dir="${build.src.dir}/${test.name}" failonerror="false"/>
+  </target>
+
+  <!-- Test sub-target -->
+  <target name="_test">
+    <property file="${test.dir}/test.properties" />
+    <antcall target="banner">
+      <param name="banner.message" value="Running: ${test.name}"/>
+    </antcall>
+    <!-- For heap test suite, set the HeapAnalyzer -->
+    <if>
+      <contains string="${test.name}" substring="memory"/>
+      <then>
+        <property name="heap.analyzer" value="class"/>
+      </then>
+      <else>
+        <property name="heap.analyzer" value="none"/>
+      </else>
+    </if>
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+        <exec executable="${build.bin.dir}/${test.name}" failonerror="true">
+          <!-- environment variables on Windows are case sensitive! -->
+          <env key="PATH" path="${product.lib.dir};${env.PATH}"/>
+          <env key="Path" path="${product.lib.dir};${env.Path}"/>
+          <env key="coherence.cluster" value="${cluster.name}"/>
+          <env key="coherence.log.level" value="${client.log.level}"/>
+          <env key="tangosol.coherence.override" value="${override.config}"/>
+          <env key="tangosol.coherence.cacheconfig" value="${client.config}"/>
+          <env key="tangosol.coherence.messaging.debug" value="${client.debug.log}"/>
+          <env key="tangosol.coherence.heap.analyzer" value="${heap.analyzer}"/>
+          <env key="tangosol.coherence.heap.logging" value="${tangosol.coherence.heap.logging}"/>
+          <!-- run functional tests with IPv6 addressing:
+               Windows:
+                  IPv4 - "ipv4"
+                  IPv6 - "unspec"
+                  no "ipv6"
+          <env key="tangosol.coherence.net"           value="unspec" />
+          -->
+        </exec>
+      </then>
+      <else>
+        <exec executable="${build.bin.dir}/${test.name}" failonerror="true">
+          <env key="DYLD_LIBRARY_PATH" path="${product.lib.dir}:${env.DYLD_LIBRARY_PATH}"/>
+          <env key="LD_LIBRARY_PATH" path="${product.lib.dir}:${env.LD_LIBRARY_PATH}"/>
+          <env key="CoherenceCluster" value="${cluster.name}"/>
+          <env key="CoherenceLogLevel" value="${client.log.level}"/>
+          <env key="TangosolCoherenceOverride" value="${override.config}"/>
+          <env key="TangosolCoherenceCacheconfig" value="${client.config}"/>
+          <env key="TangosolCoherenceMessagingDebug" value="${client.debug.log}"/>
+          <env key="TangosolCoherenceHeapAnalyzer" value="${heap.analyzer}"/>
+          <env key="TangosolCoherenceHeapLogging" value="${tangosol.coherence.heap.logging}"/>
+          <!-- run functional tests with IPv6 addressing:
+               Linux/Solaris:
+                  IPv4 - "ipv4"
+                  IPv6 - "ipv6"
+                  no "unspec"
+               OSx:
+                  IPv4 - "ipv4"
+                  no "ipv6"
+                  no "unspec"
+                  Note: "ipv6" with localhost only returns ipv6 unroutable addresses,
+                  causing InetAddressTests to fail.  Use of "ipv6" not currently
+                  possible.
+                  Note: "unspec" causes SocketTests to fail because AF_INET6 and AF_UNSPEC
+                  are not currently supported by OSx socket().
+          <env key="TangosolCoherenceNet"           value="ipv4" />
+          -->
+        </exec>
+      </else>
+    </if>
+  </target>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="generate" description="Generate test source files.">
+    <antcall target="tests.loop">
+      <param name="target.name" value="_generate"/>
+    </antcall>
+  </target>
+
+  <target name="build"
+    description="Compile and link project source."
+    depends="generate, resolve">
+    <antcall target="tests.loop">
+      <param name="target.name" value="_build"/>
+    </antcall>
+    <mkdir dir="${build.classes.dir}"/>
+    <javac srcdir="${tests.dir}/common/src/java"
+           classpath="${coherence.jar}"
+           destdir="${build.classes.dir}">
+      <include name="coherence/tests/**/*.java"/>
+    </javac>
+  </target>
+
+  <target name="test"
+    description="Build and run all unit tests.">
+    <trycatch>
+      <try>
+        <antcall target="start">
+          <param name="proxy.port" value="32000"/>
+          <param name="proxy.port.serializer" value="32001"/>
+        </antcall>
+        <antcall target="start">
+          <param name="proxy.port" value="32010"/>
+          <param name="proxy.port.serializer" value="32011"/>
+        </antcall>
+        <antcall target="ensure"/>
+        <antcall target="tests.loop">
+          <param name="target.name" value="_test"/>
+        </antcall>
+      </try>
+      <finally>
+        <antcall target="stop"/>
+        <if>
+          <isset property="artifactsDir"/>
+          <then>
+            <copy todir="${artifactsDir}">
+              <fileset dir="${build.bin.dir}" includes="*.log"/>
+            </copy>
+          </then>
+        </if>
+      </finally>
+    </trycatch>
+  </target>
+
+  <target name="start">
+    <antcall target="startcluster">
+      <param name="log.name" value="${build.bin.dir}/server-${proxy.port}.log"/>
+    </antcall>
+  </target>
+
+  <target name="ensure">
+    <antcall target="ensurecluster">
+      <param name="log.name" value="${build.bin.dir}/ensure.log"/>
+    </antcall>
+  </target>
+
+  <target name="testclient">
+    <antcall target="tests.loop">
+      <param name="target.name" value="_test"/>
+    </antcall>
+  </target>
+
+  <target name="stop">
+    <antcall target="stopcluster">
+      <param name="log.name" value="${build.bin.dir}/stop.log"/>
+    </antcall>
+  </target>
+
+  <target name="clean" description="Remove all project build artifacts.">
+    <antcall target="tests.loop">
+      <param name="target.name" value="_clean"/>
+    </antcall>
+    <delete dir="${build.classes.dir}"
+          includeemptydirs="true"
+          failonerror="false">
+      <include name="coherence/tests/**/*.class"/>
+    </delete>
+    <delete file="${build.bin.dir}/ensure.log" failonerror="false"/>
+    <delete file="${build.bin.dir}/server.log" failonerror="false"/>
+    <delete file="${build.bin.dir}/stop.log"   failonerror="false"/>
+  </target>
+</project>

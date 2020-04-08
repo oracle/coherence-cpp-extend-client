@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for populating the doc directory with documentation. -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="doc" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="dist" description="Create the project distribution.">
+    <antcall target="banner">
+      <param name="banner.message"
+             value="Creating distribution for project: ${project.name}"/>
+    </antcall>
+
+    <mkdir dir="${dist.doc.dir}"/>
+
+    <if>
+      <equals arg1="${build.description}" arg2="" trim="true"/>
+      <then>
+        <copy preservelastmodified="true" todir="${dist.doc.dir}">
+          <fileset dir=".">
+            <exclude name="build.xml"/>
+          </fileset>
+        </copy>
+      </then>
+      <else>
+        <copy preservelastmodified="true" todir="${dist.doc.dir}">
+          <fileset dir=".">
+            <include name="**/*"/>
+            <exclude name="build.xml"/>
+          </fileset>
+        </copy>
+      </else>
+    </if>
+  </target>
+</project>

@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the public header check. This project compiles   -->
+<!-- each public header without private headers in the include path, and   -->
+<!-- without external inclusion of public headers. This validates that     -->
+<!-- each public header explicitly includes every other public header it   -->
+<!-- relies upon, and that it doesn't include any private headers.         -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="public-header-check" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <property name="project.type"        value=""/>
+  <property name="project.runner"      value="StdioPrinter"/>
+  <property name="project.rebuild"     value="true"/>
+  <property name="project.compileonly" value="true"/>
+  <property name="fail.on.error"       value="true"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties based on standard properties                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <condition property="local.libs" value="coherence-debug">
+    <equals arg1="${build.type}" arg2="debug" trim="true"/>
+  </condition>
+
+  <condition property="local.libs" value="coherence">
+    <equals arg1="${build.type}" arg2="release" trim="true"/>
+  </condition>
+
+  <!-- Location of the perl executable -->
+  <if>
+    <isset property="env.os.windows"/>
+    <then>
+      <if>
+        <isset property="env.arch.x64"/>
+        <then>
+          <property name="perl.vmlauncher" value="false"/>
+        </then>
+        <else>
+          <property name="perl.vmlauncher" value="true"/>
+        </else>
+      </if>
+      <property name="perl.exe" value="${tools.platform.dir}/perl/bin/perl"/>
+    </then>
+    <else>
+      <property name="perl.exe" value="perl"/>
+      <property name="perl.vmlauncher" value="true"/>
+    </else>
+  </if>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Helper targets                                                      -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Generate the cpp -->
+  <target name="_generate">
+    <mkdir dir="${build.src.dir}/${project.name}"/>
+
+    <for param="file">
+      <path id="namespace.headers">
+        <fileset  dir="${include.dir}">
+          <include name="public/coherence/**/*.hpp"/>
+        </fileset>
+      </path>
+      <sequential>
+        <var name="include.basename" unset="true"/>
+        <basename property="include.basename" file="@{file}" suffix=".hpp"/>
+        <echo file="${build.src.dir}/${project.name}/Check${include.basename}Header.cpp"
+          append="false">#include "@{file}"
+
+</echo>
+      </sequential>
+    </for>
+  </target>
+
+
+  <!-- Compile the generated source files -->
+  <target name="_build" depends="_generate">
+    <antcall target="build-import.build">
+      <param name="project.name"    value="${project.name}"/>
+      <param name="project.libs"    value="${local.libs}"/>
+      <param name="build.artifact"  value="${project.name}"/>
+      <param name="project.include"
+          value="${include.dir}/public:${build.include.dir}/public"/>
+      <param name="project.source"
+          value="${build.src.dir}/${project.name}/*.cpp"/>
+    </antcall>
+  </target>
+
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="build"
+    description="Compile the generated source.">
+    <antcall target="_build"/>
+  </target>
+
+  <target name="clean" description="Remove all project build artifacts.">
+    <antcall target="build-import.clean">
+      <param name="project.name" value="${project.name}"/>
+      <param name="project.source"
+             value="${build.src.dir}/${project.name}/*.cpp"/>
+    </antcall>
+    <delete dir="${build.src.dir}/${project.name}" failonerror="false"/>
+  </target>
+</project>

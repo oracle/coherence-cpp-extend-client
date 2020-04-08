@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the apidoc project. This project creates the API -->
+<!-- documentation for the coherence library.                              -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="apidoc" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties based on imports                                 -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <property name="doxycheck.dir" value="${tools.common.dir}/doxycheck/lib"/>
+
+  <if>
+    <isset property="env.os.windows"/>
+    <then>
+      <property name="build.doxyfilter"
+          value="${tools.platform.dir}/doxyfilter/bin/doxyfilter.exe"/>
+      <if>
+        <isset property="env.arch.x64"/>
+        <then>
+          <property name="doxygen.vmlauncher" value="false"/>
+        </then>
+        <else>
+          <property name="doxygen.vmlauncher" value="true"/>
+        </else>
+      </if>
+    </then>
+    <else>
+      <property name="build.doxyfilter"
+         value="${tools.platform.dir}/doxyfilter/bin/doxyfilter"/>
+      <property name="doxygen.vmlauncher" value="true"/>
+    </else>
+  </if>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name       ="prepare-includes"
+          description="Generate namespace include files."
+          depends    ="resolve">
+    <mkdir dir="${build.doc.dir}/include/public"/>
+
+    <propertyregex property="build.doc.include.dir.unix"
+                   input="${build.doc.dir}/include"
+                   regexp="\\" replace="/"
+                   defaultvalue="${build.doc.dir}/include"/>
+    <uptodate property="generate.not.required">
+      <mapper type="regexp" from="^(.*)([^/\\]*)[/\\][^/\\]*\.hpp$$"
+              to="${build.doc.include.dir.unix}/public/\1\2.ns"/>
+      <srcfiles dir="${include.dir}/public" includes="**/*.hpp"/>
+    </uptodate>
+
+    <if>
+      <not>
+        <isset property="generate.not.required"/>
+      </not>
+      <then>
+        <antcall target="banner">
+          <param name="banner.message"
+                 value="Generating namespace headers for project: ${project.name}"/>
+        </antcall>
+        <generate-namespace-includes root="${include.dir}/public"
+                                     todir="${build.doc.dir}/include/public"/>
+
+        <!-- Copy public header files to build for doc generation -->
+        <copy overwrite="true" todir="${build.doc.dir}/include/public">
+          <fileset dir="${include.dir}/public">
+            <include name="coherence/**/*.hpp"/>
+          </fileset>
+        </copy>
+
+        <!-- Copyright public header files for doc generation -->
+        <java classname="com.tangosol.dev.tools.Notice" failonerror="true"
+          fork="true">
+          <classpath>
+        <pathelement location="${lib.dir}/coherence.jar"/>
+          </classpath>
+          <arg line="${build.doc.dir}/include/public ${lib.common.dir}/coherence/copyright.txt -d"/>
+        </java>
+
+      </then>
+    </if>
+  </target>
+
+  <target name="build" description="Generate API documentation." depends="prepare-includes">
+    <antcall target="banner">
+      <param name="banner.message" value="Building project: ${project.name}"/>
+    </antcall>
+
+    <mkdir dir="${build.doc.dir}/api"/>
+
+    <exec executable="${tools.platform.dir}/doxygen/bin/doxygen"
+          vmlauncher="${doxygen.vmlauncher}">
+      <arg value="doxygen.cfg"/>
+      <env key="DOC_OUTPUT_DIR"        value="${build.doc.dir}/api"/>
+      <env key="BUILD_DOC_INCLUDE_DIR" value="${build.doc.dir}/include/public"/>
+      <env key="BUILD_DOXYFILTER"      value="${build.doxyfilter}"/>
+      <env key="DOC_VERSION"           value="${project.version}"/>
+    </exec>
+
+    <antcall target="banner">
+      <param name="banner.message" value="Verifying project: ${project.name}"/>
+    </antcall>
+
+    <java classname="com.tangosol.tools.DoxyCheck" failonerror="true">
+       <classpath>
+        <pathelement location="${doxycheck.dir}/doxycheck.jar"/>
+       </classpath>
+      <arg line="${include.dir}/public"/>
+      <arg line="${build.doc.dir}/api/html"/>
+      <arg line="${prj.dir}/apidoc/exclude.txt"/>
+    </java>
+  </target>
+
+  <target name="build.private" description="Generate private API documentation." depends="prepare-includes">
+    <antcall target="banner">
+      <param name="banner.message" value="Building project: ${project.name}"/>
+    </antcall>
+
+    <mkdir dir="${build.doc.dir}/api_private"/>
+
+    <exec executable="${tools.platform.dir}/doxygen/bin/doxygen"
+          vmlauncher="${doxygen.vmlauncher}">
+      <arg value="doxygen_private.cfg"/>
+      <env key="DOC_OUTPUT_DIR"        value="${build.doc.dir}/api_private"/>
+      <env key="BUILD_DOC_INCLUDE_DIR" value="${build.doc.dir}/include/public"/>
+      <env key="BUILD_DOXYFILTER"      value="${build.doxyfilter}"/>
+      <env key="DOC_VERSION"           value="${project.version}"/>
+    </exec>
+  </target>
+
+  <target name="clean" description="Remove all project build artifacts.">
+    <antcall target="banner">
+      <param name="banner.message" value="Cleaning project: ${project.name}"/>
+    </antcall>
+
+    <delete failonerror="false" includeemptydirs="true">
+      <fileset dir="${build.dir}">
+        <include name="doxygen.log"/>
+      </fileset>
+      <fileset dir="${build.doc.dir}/include"/>
+      <fileset dir="${build.doc.dir}/api"/>
+      <fileset dir="${build.doc.dir}/api_private"/>
+    </delete>
+  </target>
+
+  <target name="dist" description="Create the project distribution." depends="build">
+    <antcall target="banner">
+      <param name="banner.message"
+             value="Creating distribution for project: ${project.name}"/>
+    </antcall>
+
+    <copy preservelastmodified="true" todir="${dist.doc.dir}/api">
+      <fileset dir="${build.doc.dir}/api/html"/>
+    </copy>
+
+    <copy preservelastmodified="true" todir="${dist.doc.dir}">
+      <fileset dir=".">
+        <include name="api.html"/>
+      </fileset>
+    </copy>
+  </target>
+</project>

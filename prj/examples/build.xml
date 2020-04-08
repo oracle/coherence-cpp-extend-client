@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for the coherence project. This project creates the  -->
+<!-- coherence examples.                                                   -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="examples" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <target name="dist" description="Create the project distribution.">
+    <antcall target="banner">
+      <param name="banner.message"
+             value="Creating distribution for project: ${project.name}"/>
+    </antcall>
+
+    <!-- Copy appropriate build script -->
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+        <patternset id="excludes">
+          <exclude name="build"/>
+          <exclude name="buildlib"/>
+          <exclude name="run"/>
+        </patternset>
+      </then>
+      <else>
+        <patternset id="excludes">
+          <exclude name="build.cmd"/>
+          <exclude name="buildlib.cmd"/>
+          <exclude name="run.cmd"/>
+        </patternset>
+      </else>
+    </if>
+    <copy preservelastmodified="true" todir="${dist.examples.dir}">
+      <fileset dir="${examples.dir}">
+        <patternset refid="excludes"/>
+      </fileset>
+    </copy>
+
+    <!-- Copyright example header files -->
+    <java classname="com.tangosol.dev.tools.Notice" failonerror="true"
+          fork="true">
+      <classpath>
+        <pathelement location="${lib.common.dir}/coherence/coherence.jar"/>
+      </classpath>
+      <arg line="${dist.examples.dir}/*.hpp ${lib.common.dir}/coherence/copyright.txt -d"/>
+    </java>
+
+    <!-- Copyright example source files -->
+    <java classname="com.tangosol.dev.tools.Notice" failonerror="true"
+          fork="true">
+      <classpath>
+        <pathelement location="${lib.common.dir}/coherence/coherence.jar"/>
+      </classpath>
+      <arg line="${dist.examples.dir}/*.cpp ${lib.common.dir}/coherence/copyright.txt -d"/>
+    </java>
+    <java classname="com.tangosol.dev.tools.Notice" failonerror="true"
+          fork="true">
+      <classpath>
+        <pathelement location="${lib.common.dir}/coherence/coherence.jar"/>
+      </classpath>
+      <arg line="${dist.examples.dir}/*.java ${lib.common.dir}/coherence/copyright.txt -d"/>
+    </java>
+  </target>
+</project>

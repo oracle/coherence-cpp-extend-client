@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build script for Coherence for C++                                -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="main" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project properties                                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <if>
+    <isset property="display.cc"/>
+    <then>
+      <property name="dist.file"
+                value="${dist.dir}/coherence-cpp-${build.version}b${build.number}-${display.os}-${env.arch}-${display.cc}.zip"/>
+    </then>
+    <elseif>
+      <isset property="build.cc"/>
+      <then>
+        <property name="dist.file"
+                value="${dist.dir}/coherence-cpp-${build.version}b${build.number}-${display.os}-${env.arch}-${build.cc}.zip"/>
+      </then>
+    </elseif>
+    <else>
+      <property name="dist.file"
+                value="${dist.dir}/coherence-cpp-${build.version}b${build.number}-${display.os}-${env.arch}.zip"/>
+    </else>
+  </if>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project targets                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <!-- Build all subprojects -->
+  <target name="build" description="Build all subprojects.">
+    <ant dir="coherence"                 target="build" inheritall="false"/>
+    <ant dir="sanka"                     target="build" inheritall="false"/>
+    <if>
+      <isset property="build.apidoc"/>
+      <then>
+        <ant dir="apidoc"                target="build" inheritall="false"/>
+      </then>
+    </if>
+    <ant dir="tests/unit"                target="build" inheritall="false"/>
+    <ant dir="tests/functional"          target="build" inheritall="false"/>
+    <ant dir="tests/public-header-check" target="build" inheritall="false"/>
+  </target>
+
+  <!-- Build all subprojects for release -->
+  <target name="build.release"
+    description="Build all subprojects for release.">
+    <antcall target="build">
+      <param name="build.type" value="release"/>
+    </antcall>
+
+    <ant dir="tests/unit" target="build" inheritall="false">
+      <property name="build.type" value="debug"/>
+      <property name="test.mixed" value="true"/>
+    </ant>
+    <ant dir="tests/functional" target="build" inheritall="false">
+      <property name="build.type" value="debug"/>
+      <property name="test.mixed" value="true"/>
+    </ant>
+  </target>
+
+  <!-- Clean all subprojects -->
+  <target name="clean" description="Clean all subprojects.">
+    <ant dir="coherence"                 target="clean" inheritall="false"/>
+    <ant dir="sanka"                     target="clean" inheritall="false"/>
+    <ant dir="apidoc"                    target="clean" inheritall="false"/>
+    <ant dir="tests/unit"                target="clean" inheritall="false"/>
+    <ant dir="tests/functional"          target="clean" inheritall="false"/>
+    <ant dir="tests/public-header-check" target="clean" inheritall="false"/>
+
+    <if>
+      <istrue value="${clean.dist}"/>
+      <then>
+        <delete failonerror="false" includeemptydirs="true">
+          <fileset dir="${dist.version.dir}"/>
+        </delete>
+        <delete failonerror="false">
+          <fileset file="${dist.file}"/>
+        </delete>
+      </then>
+    </if>
+  </target>
+
+  <!-- Clean all subprojects -->
+  <target name="clean.release"
+    description="Clean all subprojects for release.">
+    <antcall target="clean">
+      <param name="build.type" value="release"/>
+    </antcall>
+  </target>
+
+  <!-- Create a distribution of all subjprojects -->
+  <target name="dist" description="Create a distribution of all subprojects.">
+    <ant dir="coherence" target="dist" inheritall="false"/>
+    <ant dir="sanka"     target="dist" inheritall="false"/>
+    <ant dir="apidoc"    target="dist" inheritall="false"/>
+    <ant dir="doc"       target="dist" inheritall="false"/>
+
+    <!-- Copy the metalink readme and update it with the appropriate information -->
+    <if>
+      <equals arg1="${build.description}" arg2="" trim="true"/>
+      <then>
+        <property name="readme.filename" value="readme.txt"/>
+      </then>
+      <else>
+        <property name="readme.filename" value="readme-prerelease.txt"/>
+      </else>
+    </if>
+    <copy tofile="${dist.version.dir}/README.txt"
+          file="${doc.dir}/build/${readme.filename}">
+      <filterset>
+        <filter token="DESCRIPTION" value="${build.description}"/>
+        <filter token="VERSION"     value="${build.version}"/>
+      </filterset>
+    </copy>
+
+    <!-- Create an archive of the standard distribution -->
+    <!-- Exclude readme and non-Windows executables for special handling -->
+    <zip destfile="${dist.file}" filesonly="true">
+      <zipfileset dir="${dist.version.dir}" prefix="coherence-cpp">
+        <exclude name="**/sanka"/>
+        <exclude name="README.txt"/>
+      </zipfileset>
+      <!-- Set execute bit for executables -->
+      <zipfileset dir="${dist.version.dir}" prefix="coherence-cpp" filemode="755">
+        <include name="**/sanka"/>
+      </zipfileset>
+      <!-- Put the readme in the top level directory -->
+      <zipfileset dir="${dist.version.dir}">
+        <include name="README.txt"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+  <target name="dist.addlib"
+          description="Add a Coherence library to an existing distribution.">
+    <zip destfile="${dist.file}" filesonly="true" update="true">
+      <zipfileset dir="${dist.version.dir}/lib" prefix="coherence-cpp/lib/${dist.libdirname}"/>
+    </zip>
+  </target>
+
+  <!-- Create a distribution of all subjprojects for release -->
+  <target name="dist.release"
+    description="Create a distribution of all subprojects for release.">
+    <antcall target="dist">
+      <param name="build.type" value="release"/>
+    </antcall>
+  </target>
+
+  <!-- Run the unit tests of the product -->
+  <target name="test" description="Run the unit tests.">
+    <ant dir="tests/unit" target="test" inheritall="false"/>
+  </target>
+
+  <!-- Run the functional tests of the product -->
+  <target name="functest" description="Run the functional tests.">
+    <ant dir="tests/functional" target="test" inheritall="false"/>
+  </target>
+
+  <!-- Run the unit and functional tests of the released product -->
+  <target name="test.release"
+    description="Run the unit and functional tests for release.">
+    <antcall target="test">
+      <param name="build.type" value="release"/>
+    </antcall>
+    <antcall target="functest">
+      <param name="build.type" value="release"/>
+    </antcall>
+
+    <!-- run debug tests against release library build -->
+    <antcall target="test">
+      <param name="build.type" value="debug"/>
+      <param name="test.mixed" value="true"/>
+      <param name="coherence.heap.logging" value="true"/>
+    </antcall>
+    <antcall target="functest">
+      <param name="build.type" value="debug"/>
+      <param name="test.mixed" value="true"/>
+      <param name="coherence.heap.logging" value="true"/>
+    </antcall>
+
+  </target>
+
+  <!-- Run the public header check -->
+  <target name="public-header-check" description="Run the public header check.">
+    <ant dir="tests/public-header-check" target="build" inheritall="false"/>
+  </target>
+
+  <!-- Create and test the released product kit -->
+  <target name="kit" description="Create a kit of the product.">
+
+    <antcall target="clean.release">
+      <param name="clean.dist" value="true"/>
+    </antcall>
+
+    <!-- As an extra precaution, delete the build directory -->
+    <delete dir="${build.dir}" includeemptydirs="true" failonerror="false"/>
+
+    <antcall target="build.release"/>
+    <antcall target="test.release"/>
+    <antcall target="dist.release"/>
+  </target>
+
+  <!-- Create and test an additional library (e.g. STLport) to add to the kit
+
+       Sample usage:
+       ant -Dbuild.official=true -Dbuild.type=release -Dbuild.number=1234
+           -Dcc.stlport=true -D-Ddist.libdirname=stlport kit.addlibrary
+  -->
+  <target name="kit.addlibrary" description="Add an alternate library to the kit.">
+
+    <!-- clean coherence - object files only -->
+    <ant dir="coherence" target="clean" inheritall="false">
+      <property name="build.type"         value="release"/>
+      <property name="clean.skipincludes" value="true"/>
+    </ant>
+
+    <!-- release build coherence -->
+    <ant dir="coherence" target="build" inheritall="false">
+      <property name="build.type"         value="release"/>
+    </ant>
+
+    <antcall target="test.compatibility"/>
+
+    <!-- copy only the library to dist -->
+    <ant dir="coherence" target="dist" inheritall="false">
+      <property name="build.type"         value="release"/>
+      <property name="dist.libonly"       value="true"/>
+    </ant>
+
+    <antcall target="dist.addlib">
+      <param    name="build.type"         value="release"/>
+    </antcall>
+  </target>
+
+  <!-- Build and run the tests against an already built Coherence library -->
+  <target name="test.compatibility">
+
+    <!-- clean any already built test binaries -->
+    <ant dir="tests/unit"                target="clean" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+    <ant dir="tests/functional"          target="clean" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+    <ant dir="tests/unit"                target="clean" inheritall="false">
+      <property name="build.type" value="debug"/>
+    </ant>
+    <ant dir="tests/functional"          target="clean" inheritall="false">
+      <property name="build.type" value="debug"/>
+    </ant>
+    <ant dir="tests/public-header-check" target="clean" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+
+    <!-- build all test binaries -->
+    <ant dir="tests/unit"                target="build" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+    <ant dir="tests/functional"          target="build" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+    <ant dir="tests/unit"                target="build" inheritall="false">
+      <property name="build.type" value="debug"/>
+      <property name="test.mixed" value="true"/>
+    </ant>
+    <ant dir="tests/functional"          target="build" inheritall="false">
+      <property name="build.type" value="debug"/>
+      <property name="test.mixed" value="true"/>
+    </ant>
+    <ant dir="tests/public-header-check" target="build" inheritall="false">
+      <property name="build.type" value="release"/>
+    </ant>
+
+    <!-- run tests -->
+    <antcall target="test.release"/>
+  </target>
+
+  <!-- Create an escrow archive of the product -->
+  <target name="escrow" description="Create an escrow archive." depends="clean">
+    <zip destfile="${dist.dir}/escrow-cpp-${build.version}.zip"
+         filesonly="true">
+      <zipfileset dir="${main.dir}" prefix="${build.version}"
+                  excludes="readme.txt, dist/**/*"/>
+      <zipfileset dir="${doc.dir}/escrow" prefix="${build.version}"
+                  includes="readme.txt"/>
+    </zip>
+  </target>
+</project>

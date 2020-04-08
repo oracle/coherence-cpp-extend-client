@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- ANT build file that contains common build properties, paths, task     -->
+<!-- definitions, and targets for functional tests. This build file should -->
+<!-- be imported in *all* project build files immediately after any        -->
+<!-- overriden project properties.                                         -->
+<!--                                                                       -->
+<!-- Usage:                                                                -->
+<!--     prompt> ant help                                                  -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<project name="functest-import" default="help" basedir=".">
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Project imports                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <import file="../../build-import.xml"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- Global project properties                                           -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <property name="coherence.lib.dir"     value="${lib.dir}"/>
+  <property name="coherence.jar"         value="${coherence.lib.dir}/coherence.jar"/>
+  <property name="cluster-control.jar"   value="${tools.dir}/cluster-control/lib/cluster-control.jar"/>
+  <property name="cluster.count"         value="2"/>
+  <property name="cluster.name"          value="C++Test"/>
+  <property name="server.config"         value="${main.dir}/prj/tests/functional/defaultconfig/server-cache-config.xml"/>
+  <property name="pof.config"            value="${main.dir}/prj/tests/functional/defaultconfig/server-pof-config.xml"/>
+  <property name="override.config"       value="${main.dir}/prj/tests/functional/defaultconfig/tangosol-coherence-override.xml"/>
+  <property name="client.config"         value="${main.dir}/prj/tests/functional/defaultconfig/extend-cache-config.xml"/>
+  <property name="ClusterControl.config" value="${main.dir}/prj/tests/functional/defaultconfig/cluster-control-cache-config.xml"/>
+  <property name="server.log.name"       value="${main.dir}/prj/FuncTestServer.log"/>
+  <property name="client.log.level"      value="6"/>
+  <property name="server.log.level"      value="9"/>
+  <property name="client.debug.log"      value="false"/>
+  <property name="server.debug.log"      value="true"/>
+
+  <target name="startcluster">
+    <antcall target="banner">
+      <param name="banner.message" value="Starting cache server"/>
+    </antcall>
+
+    <if>
+      <isset property="env.os.windows"/>
+      <then>
+        <propertyregex property="pof.config"
+                       override="true"
+                       input="${pof.config}"
+                       regexp="\\"
+                       replace="/"/>
+        <property name="pof.config.uri" value="file:///${pof.config}"/>
+      </then>
+      <else>
+        <property name="pof.config.uri" value="file://${pof.config}"/>
+      </else>
+    </if>
+
+    <java classname="com.tangosol.net.DefaultCacheServer" fork="true" spawn="true">
+      <classpath>
+        <pathelement location="${coherence.jar}"/>
+        <pathelement location="${cluster-control.jar}"/>
+        <pathelement location="${build.classes.dir}"/>
+      </classpath>
+      <sysproperty key="tangosol.coherence.cacheconfig" value="${server.config}"/>
+      <sysproperty key="coherence.cluster" value="${cluster.name}"/>
+      <sysproperty key="tangosol.coherence.override" value="${override.config}"/>
+      <sysproperty key="tangosol.coherence.log" value="${log.name}"/>
+      <sysproperty key="tangosol.coherence.log.level" value="${server.log.level}"/>
+      <sysproperty key="tangosol.coherence.management" value="all"/>
+      <sysproperty key="tangosol.coherence.messaging.debug" value="${server.debug.log}"/>
+      <sysproperty key="tangosol.coherence.proxy.port" value="${proxy.port}"/>
+      <sysproperty key="tangosol.coherence.proxy.port.serializer" value="${proxy.port.serializer}"/>
+      <sysproperty key="tangosol.pof.config" value="${pof.config.uri}"/>
+      <sysproperty key="test.override" value="${test.override}"/>
+    </java>
+  </target>
+
+  <target name="ensurecluster">
+    <antcall target="banner">
+      <param name="banner.message" value="Ensuring ${cluster.count} servers are running."/>
+    </antcall>
+    <java classname="com.tangosol.tests.net.cache.ClusterControl"
+      failonerror="true" fork="true">
+      <classpath>
+        <pathelement location="${coherence.jar}"/>
+        <pathelement location="${cluster-control.jar}"/>
+      </classpath>
+      <sysproperty key="coherence.cluster" value="${cluster.name}"/>
+      <sysproperty key="tangosol.coherence.cacheconfig" value="${ClusterControl.config}"/>
+      <sysproperty key="tangosol.coherence.override" value="${override.config}"/>
+      <sysproperty key="tangosol.coherence.log" value="${log.name}"/>
+      <sysproperty key="tangosol.coherence.log.level" value="${server.log.level}"/>
+      <arg value="ensure"/>
+      <arg value="${cluster.count}"/>
+    </java>
+  </target>
+
+  <target name="stopcluster">
+    <antcall target="banner">
+      <param name="banner.message" value="Stopping cluster"/>
+    </antcall>
+    <java classname="com.tangosol.tests.net.cache.ClusterControl"
+      failonerror="true" fork="true">
+      <classpath>
+        <pathelement location="${coherence.jar}"/>
+        <pathelement location="${cluster-control.jar}"/>
+      </classpath>
+      <sysproperty key="coherence.cluster" value="${cluster.name}"/>
+      <sysproperty key="tangosol.coherence.cacheconfig" value="${ClusterControl.config}"/>
+      <sysproperty key="tangosol.coherence.override" value="${override.config}"/>
+      <sysproperty key="tangosol.coherence.log" value="${log.name}"/>
+      <sysproperty key="tangosol.coherence.log.level" value="${server.log.level}"/>
+      <arg value="stop"/>
+    </java>
+  </target>
+</project>

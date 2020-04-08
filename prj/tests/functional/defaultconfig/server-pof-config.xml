@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+
+<!DOCTYPE pof-config SYSTEM "pof-config.dtd">
+
+<pof-config>
+  <user-type-list>
+    <include>coherence-pof-config.xml</include>
+
+    <user-type>
+      <type-id>1011</type-id>
+      <class-name>coherence.tests.IntegerComparator</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1013</type-id>
+      <class-name>coherence.tests.AirDealComparator</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1014</type-id>
+      <class-name>coherence.tests.AirDealComparator$AirDeal</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1034</type-id>
+      <class-name>coherence.tests.PortablePerson</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1201</type-id>
+      <class-name>coherence.tests.Book</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1500</type-id>
+      <class-name>coherence.tests.IncrementorInvocable</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1501</type-id>
+      <class-name>coherence.tests.VersionedObject</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1502</type-id>
+      <class-name>coherence.tests.StringLengthComparator</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1503</type-id>
+      <class-name>coherence.tests.POFObjectInvocable</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1510</type-id>
+      <class-name>coherence.tests.MBeanInvocable</class-name>
+    </user-type>
+
+    <!-- Skip 1511. 1511 is the client side only CustomKeyClass. -->
+
+    <user-type>
+      <type-id>1512</type-id>
+      <class-name>coherence.tests.ProcessorPrintUUIDTimestamp</class-name>
+    </user-type>
+    <user-type>
+      <type-id>1600</type-id>
+      <class-name>coherence.tests.ProxyControlInvocable</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>9999</type-id>
+      <class-name>coherence.tests.TestSubjectInvocable</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3004</type-id>
+      <class-name>coherence.tests.TestContact</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3005</type-id>
+      <class-name>coherence.tests.FilterFetcher</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3006</type-id>
+      <class-name>coherence.tests.ExampleAddress</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3009</type-id>
+      <class-name>coherence.tests.SimplePersonMapTrigger</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3010</type-id>
+      <class-name>coherence.tests.SimplePerson</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3011</type-id>
+      <class-name>coherence.tests.TestObject</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3012</type-id>
+      <class-name>coherence.tests.SlowProcessor</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3013</type-id>
+      <class-name>coherence.tests.SlowAggregator</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3014</type-id>
+      <class-name>coherence.tests.TestFilter</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>3015</type-id>
+      <class-name>coherence.tests.TestTransformer</class-name>
+    </user-type>
+
+    <!-- KeyAssociate-related test classes -->
+
+    <user-type>
+      <type-id>4001</type-id>
+      <class-name>coherence.tests.Order</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>4002</type-id>
+      <class-name>coherence.tests.OrderKey</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>4003</type-id>
+      <class-name>coherence.tests.Item</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>4004</type-id>
+      <class-name>coherence.tests.ItemKey</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>4005</type-id>
+      <class-name>coherence.tests.KAFValidationInvocable</class-name>
+    </user-type>
+
+    <user-type>
+      <type-id>4006</type-id>
+      <class-name>coherence.tests.Part</class-name>
+    </user-type>
+
+  </user-type-list>
+  <enable-references>true</enable-references>
+</pof-config>

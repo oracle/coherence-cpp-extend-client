@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+-->
+<!DOCTYPE cache-config SYSTEM "cache-config.dtd">
+
+<cache-config>
+  <caching-scheme-mapping>
+    <cache-mapping>
+      <cache-name>local-*</cache-name>
+      <scheme-name>local-example</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>dist-*</cache-name>
+      <scheme-name>extend-dist</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>secure-*</cache-name>
+      <scheme-name>extend-dist</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>filter-foo</cache-name>
+      <scheme-name>extend-filter</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>near-*</cache-name>
+      <scheme-name>near-example</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>custom-serializer</cache-name>
+      <scheme-name>extend-custom-serializer</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>custom-serializer-xmlconfigurable</cache-name>
+      <scheme-name>extend-custom-serializer-xmlconfigurable</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>custom-pof-serializer</cache-name>
+      <scheme-name>extend-custom-pof-serializer</scheme-name>
+    </cache-mapping>
+
+    <cache-mapping>
+      <cache-name>defer-key-association-check</cache-name>
+      <scheme-name>extend-defer-key-association-check</scheme-name>
+    </cache-mapping>
+  </caching-scheme-mapping>
+
+  <caching-schemes>
+    <local-scheme>
+      <scheme-name>local-example</scheme-name>
+    </local-scheme>
+
+    <near-scheme>
+      <scheme-name>near-example</scheme-name>
+      <front-scheme>
+        <local-scheme>
+          <high-units>1</high-units>
+        </local-scheme>
+      </front-scheme>
+      <back-scheme>
+        <remote-cache-scheme>
+          <scheme-ref>extend-dist</scheme-ref>
+        </remote-cache-scheme>
+      </back-scheme>
+    </near-scheme>
+
+    <remote-cache-scheme>
+      <scheme-name>extend-dist</scheme-name>
+      <service-name>ExtendTcpCacheService</service-name>
+      <operation-bundling>
+        <bundle-config>
+          <operation-name>all</operation-name>
+          <preferred-size>10</preferred-size>
+          <thread-threshold>5</thread-threshold>
+        </bundle-config>
+      </operation-bundling>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+    <remote-cache-scheme>
+      <service-name>ExtendTcpCacheService2</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+    <remote-cache-scheme>
+      <scheme-name>extend-filter</scheme-name>
+      <service-name>ExtendFilterTcpCacheService</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <use-filters>
+          <filter-name>DummyFilter</filter-name>
+      </use-filters>
+      <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+
+    <!-- Services using custom serializers -->
+    <remote-cache-scheme>
+      <scheme-name>extend-custom-serializer</scheme-name>
+      <service-name>ExtendTcpCacheServiceCustomSerializer</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32001</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <serializer>
+          <instance>
+            <class-name>common::test::TestSerializer</class-name>
+          </instance>
+        </serializer>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+    <remote-cache-scheme>
+      <scheme-name>extend-custom-serializer-xmlconfigurable</scheme-name>
+      <service-name>ExtendTcpCacheServiceCustomSerializerXML</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32001</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <serializer>xml</serializer>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+    <remote-cache-scheme>
+      <scheme-name>extend-custom-pof-serializer</scheme-name>
+      <service-name>ExtendTcpCacheServiceCustomPofSerializer</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <serializer>test</serializer>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-cache-scheme>
+
+    <remote-cache-scheme>
+      <scheme-name>extend-defer-key-association-check</scheme-name>
+      <service-name>ExtendTcpCacheService3</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+      <defer-key-association-check>true</defer-key-association-check>
+    </remote-cache-scheme>
+
+    <remote-invocation-scheme>
+      <service-name>ExtendTcpInvocationService</service-name>
+      <initiator-config>
+        <tcp-initiator>
+          <remote-addresses>
+            <socket-address>
+              <address system-property="tangosol.coherence.proxy.address">127.0.0.1</address>
+              <port system-property="tangosol.coherence.proxy.port">32000</port>
+            </socket-address>
+          </remote-addresses>
+        </tcp-initiator>
+        <outgoing-message-handler>
+          <request-timeout>30s</request-timeout>
+        </outgoing-message-handler>
+        <connect-timeout>10s</connect-timeout>
+      </initiator-config>
+    </remote-invocation-scheme>
+  </caching-schemes>
+</cache-config>
