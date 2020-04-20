@@ -9,7 +9,7 @@
 # Coherence for C++ on supported Unix platforms.
 #
 # Command line:
-#     . ./cfgunix.sh [-reset]
+#     . ./cfglocal.sh [-reset]
 #
 # This script is responsible for the following environment variables:
 #
@@ -76,7 +76,7 @@ if [ ! -z $DEV_ROOT ]; then
   echo Build environment already set.
   return 0
 fi
-cd ..
+cd $SCRIPTS_DIR/..
 DEV_ROOT=`pwd`
 cd - > /dev/null
 
@@ -146,6 +146,11 @@ fi
 if [ -n $ANT_HOME ]; then
   PATH=$ANT_HOME/bin:$PATH
 fi
+
+#
+# Add the RQ executables to the PATH environment variable
+#
+PATH=$PATH:$DEV_ROOT/tools/internal/wls/infra
 
 #
 # Echo Java and Compiler versions
