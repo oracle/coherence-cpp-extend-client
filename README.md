@@ -336,3 +336,4 @@ files will produce warnings when compiling with GCC
 cd ../prj/tests/unit (or cd ../prj/tests/functional)
 ant -Dbuild.type=release build test
 ```
+
