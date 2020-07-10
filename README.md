@@ -7,7 +7,7 @@
 
 -->
 -----
-<img src=https://coherence.java.net/assets/img/logo-community.png><img>
+<img src=https://oracle.github.io/coherence/assets/images/logo-red.png><img>
 
 [![License](http://img.shields.io/badge/license-UPL%201.0-blue.svg)](https://oss.oracle.com/licenses/upl/)
 
@@ -26,25 +26,29 @@
 
 # <a name="intro"></a>Introduction to Coherence
 
-[Coherence](http://coherence.java.net/) is scalable, fault-tolerant, cloud-ready,
+[Coherence](http://coherence.community/) is a scalable, fault-tolerant, cloud-ready,
 distributed platform for building grid-based applications and reliably storing data.
-The product is used at scale, for both compute and raw storage, in a vast array of
-industries including critical financial trading systems, high performance telecommunication
-products and eCommerce applications to name but a few. Typically these deployments
-do not tolerate any downtime and Coherence is chosen due its novel features in
-death detection, application data evolvability, and the robust, battle-hardened
-core of the product allowing it to be seamlessly deployed and adapt within any ecosystem.
+The product is used at scale, for both compute and raw storage, in a vast array of 
+industries such as critical financial trading systems, high performance telecommunication
+products and eCommerce applications. 
 
-At a high level, Coherence provides an implementation of the all too familiar Java `Map`
+Typically these deployments do not tolerate any downtime and Coherence is chosen due to its 
+novel features in death detection, application data evolvability, and the robust,
+battle-hardened core of the product that enables it to be seamlessly deployed and 
+adapted within any ecosystem.
+
+At a high level, Coherence provides an implementation of the familiar `Map`
 interface but rather than storing the associated data in the local process it is partitioned
-(or sharded if you prefer) across a number of designated remote nodes. This allows
+(or sharded) across a number of designated remote nodes. This partitioning enables
 applications to not only distribute (and therefore scale) their storage across multiple
 processes, machines, racks, and data centers but also to perform grid-based processing
-to truly harness the cpu resources of the machines. The Coherence interface `NamedCache`
-(an extension of `Map`) provides methods to query, aggregate (map/reduce style) and
-compute (send functions to storage nodes for locally executed mutations) the data set.
-These capabilities, in addition to numerous other features, allows Coherence to be used
-as a framework to write robust, distributed applications.
+to truly harness the CPU resources of the machines. 
+
+The Coherence interface `NamedCache` (an extension of `Map`) provides methods
+to query, aggregate (map/reduce style) and compute (send functions to storage nodes
+for locally executed mutations) the data set. These capabilities, in addition to 
+numerous other features, enable Coherence to be used as a framework for writing robust,
+distributed applications.
 
 # <a name="acquire"></a>How to Get Coherence Community Edition
 
@@ -70,14 +74,14 @@ remote cluster node (over TCP/IP) is completely transparent to the client applic
 > **_NOTE:_** The C++ client follows the interface and concepts of the Java client, and
 > users familiar with Coherence for Java should find migrating to Coherence for C++ straightforward.
 
-See [Developing Remote Clients for Oracle Coherence](https://docs.oracle.com/en/middleware/fusion-middleware/coherence/12.2.1.4/develop-remote-clients/creating-c-extend-clients.html)
+See [Developing Remote Clients for Oracle Coherence](https://docs.oracle.com/en/middleware/standalone/coherence/14.1.1.0/develop-remote-clients/creating-c-extend-clients.html)
 for further details.
 
 # <a name="build"></a>Building
 
 ## Prerequisites
 
-1. A supported hardware platform and C++ compiler. See [Supported Environments for Coherence C++ Client](https://docs.oracle.com/en/middleware/fusion-middleware/coherence/12.2.1.4/install/installing-client-distribution.html#GUID-49C698DD-D34A-416D-A71C-566C32824CEA).
+1. A supported hardware platform and C++ compiler. See [Supported Environments for Coherence C++ Client](https://docs.oracle.com/en/middleware/standalone/coherence/14.1.1.0/install/installing-client-distribution.html#GUID-49C698DD-D34A-416D-A71C-566C32824CEA).
 1. Oracle Java 8 JDK
 1. Apache Ant version 1.7.0 or later
 1. [Ant-Contrib](http://ant-contrib.sourceforge.net/) version 1.0b3
