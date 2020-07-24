@@ -1,0 +1,83 @@
+# Copyright 2020 Oracle Corporation and/or its affiliates.  All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at
+# http://oss.oracle.com/licenses/upl.
+
+# ---------------------------------------------------------------------------
+# Coherence C++ Extend Client GitHub Actions CI build.
+# ---------------------------------------------------------------------------
+
+name: CI Build
+
+on:
+  push:
+    branches-ignore:
+    - gh-pages
+    - p4-integ*
+    - last-p4-*
+  pull_request:
+    types:
+      - opened
+      - committed
+    branches:
+    - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Install and Set up dependencies/tools which are required by build
+    - name: Build Setup
+      run: |
+        TMP_DIR=`mktemp -d /tmp/ci_build_XXXXXX`
+
+        # Download and install ant
+        wget --tries=3 https://archive.apache.org/dist/ant/binaries/apache-ant-1.7.0-bin.zip -O $TMP_DIR/ant.zip
+        mkdir -p tools/internal/common
+        unzip $TMP_DIR/ant.zip -d tools/internal/common/
+        mv tools/internal/common/apache-ant-1.7.0 tools/internal/common/ant
+
+        # Download and install ant-contrib-1.0b3.jar
+        wget --tries=3 https://sourceforge.net/projects/ant-contrib/files/ant-contrib/1.0b3/ant-contrib-1.0b3-bin.zip/download -O $TMP_DIR/ant-contrib.zip
+        unzip $TMP_DIR/ant-contrib.zip -d tools/internal/common/
+        mv tools/internal/common/ant-contrib/ant-contrib-1.0b3.jar tools/internal/common/ant-contrib/lib/
+
+        # Download and install cpptasks
+        wget --tries=3 https://sourceforge.net/projects/ant-contrib/files/ant-contrib/cpptasks-1.0-beta4/cpptasks-1.0b4.zip/download -O $TMP_DIR/cpptasks.zip
+        unzip $TMP_DIR/cpptasks.zip -d tools/internal/common/
+        mv tools/internal/common/cpptasks-1.0b4/cpptasks.jar tools/internal/common/ant-contrib/lib/cpptasks-1.0b4.jar
+
+        # Download and install cxxtest
+        wget --tries=3 https://sourceforge.net/projects/cxxtest/files/cxxtest/3.10.1/cxxtest-3.10.1.zip/download -O $TMP_DIR/cxxtest.zip
+        unzip $TMP_DIR/cxxtest.zip -d tools/internal/common
+
+    # Build
+    - name: Build
+      run: |
+        . ./bin/cfglocal.sh
+        sed -i "s|-Werror|-Wno-error|g" prj/build-import.xml
+        git diff
+        ant -f prj/build.xml clean build
+
+    # Verify
+    - name: Verify
+      run: |
+        . ./bin/cfglocal.sh
+        ant -f prj/tests/unit/build.xml test
+
+    # Capture logs and test reports for diagnosing failures
+    - name: Capture test logs
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: build-output
+        path: build\**\*.log
+
+    - name: Capture test reports
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: test-reports
+        path: build\**\*tests.xml
