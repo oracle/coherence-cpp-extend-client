@@ -77,6 +77,7 @@
   <property  name="ivy.jar.dir"                     value="${tools.common.dir}/ant-contrib/lib"/>
   <property  name="ivy.version"                     value="2.4.0"/>
   <property  name="ivy.jar"                         value="${ivy.jar.dir}/ivy-${ivy.version}.jar"/>
+  <property  name="ivy.file"                        value="ivy.xml"/>
   <available property="ivy-exists"                  file="${ivy.jar}"/>
 
   <!-- Default C++ compilation properties -->
@@ -748,7 +749,7 @@
       <param name="banner.message" value="Resolving dependencies"/>
     </antcall>
     <ivy:settings file   ="${prj.dir}/ivy-settings.xml"/>
-    <ivy:resolve  file   ="${prj.dir}/ivy.xml"/>
+    <ivy:resolve  file   ="${prj.dir}/${ivy.file}"/>
     <ivy:retrieve pattern="${lib.dir}/[artifact].[ext]"/>
   </target>
 
