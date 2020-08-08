@@ -1,3 +1,11 @@
+<!--
+
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  http://oss.oracle.com/licenses/upl.
+
+-->
 # Development Guidelines
 
 This page provides information on how to successfully contribute to the Coherence C++ extend client. Coding conventions are stylistic in nature and the Coherence style is different to many open source projects therefore we understand the raising of eyebrows. However, consistency is significantly more important than the adopted subjective style, therefore please conform to the following rules as it has a direct impact on review times.
