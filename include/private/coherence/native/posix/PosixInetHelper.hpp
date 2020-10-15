@@ -210,18 +210,27 @@ class COH_EXPORT PosixInetHelper
         static struct addrinfo* getBestAddress(struct addrinfo* pAddrInfo)
             {
             // find best IPv4/6 address, prefer IPv4 over IPv6
-            addrinfo* pAddrBest = NULL;
+            addrinfo* pAddrBest   = NULL;
+            bool      fIsLoopback = false; // whether current best address is a loopback address
+
             for (struct addrinfo* pAddrNext = pAddrInfo; pAddrNext != NULL;
                     pAddrNext = pAddrNext->ai_next)
                 {
                 if (!isRoutable(pAddrNext))
                     {
+                    // if pAddrBest is not set yet and pAddrNext is loopback, set to the loopback as a fallback
+                    if (NULL == pAddrBest && isLoopbackAddress(pAddrNext))
+                        {
+                        fIsLoopback = true;
+                        pAddrBest   = pAddrNext;
+                        }
                     continue;
                     }
 
-                if (NULL == pAddrBest)
+                if (NULL == pAddrBest || fIsLoopback)
                     {
-                    pAddrBest = pAddrNext;
+                    fIsLoopback = false;
+                    pAddrBest   = pAddrNext;
                     }
                 else
                     {
@@ -374,7 +383,7 @@ class COH_EXPORT PosixInetHelper
                                 | (vabAddr[2] & 0xFF) <<  8
                                 | (vabAddr[3] & 0xFF);
 
-                    if (nIP == 0x00000000 && nIP == 0x7F000001)
+                    if (nIP == 0x00000000 || nIP == 0x7F000001)
                         {
                         isLoopback = true;
                         }
