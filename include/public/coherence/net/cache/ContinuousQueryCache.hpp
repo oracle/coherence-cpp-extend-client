@@ -815,22 +815,6 @@ class COH_EXPORT ContinuousQueryCache
         virtual ObservableMap::Handle ensureInternalCache() const;
 
         /**
-        * Verify that the non-existent keys are NOT present in the
-        * underlying cache (assumption is most keys in the collection are
-        * already in the ContinuousQueryCache).
-        *
-        * @param vCollKeys the keys to check the underlying cache against.
-        *
-        * @return the NamedCache
-        *
-        * @throws coherence::lang::IllegalStateException if any of the keys in
-        *         collKeys doesn't exist within the ContinuousQueryCache
-        *
-        * @since 12.2.1.4
-        */
-        virtual void ensureSaneCache(Collection::View vCollKeys) const;
-
-        /**
         * Instantiate and register a NamedCacheDeactivationListener with the underlying cache
         * service.
         * 
