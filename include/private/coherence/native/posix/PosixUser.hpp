@@ -22,7 +22,11 @@ String::View NativeUser::getUserName()
     struct passwd *pwentp;
     char   buf[1024];
 
-    if (getpwuid_r(getuid(), &pwent, buf, (int) sizeof(buf), &pwentp))
+    // COH-22221 - When the pointer returned by the reentrant function getpwuid_r(),
+    //             is non-null, it is always equal to the pwd pointer that was suppliedi
+    //             by the caller.
+    if (getpwuid_r(getuid(), &pwent, buf, (int) sizeof(buf), &pwentp) != 0 ||
+            pwentp != &pwent)
         {
         return NULL;
         }
