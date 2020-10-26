@@ -777,15 +777,7 @@ Object::Holder ContinuousQueryCache::invoke(Object::View vKey,
         InvocableMap::EntryProcessor::Handle hAgent)
     {
     NamedCache::Handle hCache = getCache();
-    if (containsKey(vKey) || !hCache->containsKey(vKey))
-        {
-        return hCache->invoke(vKey, hAgent);
-        }
-    else
-        {
-        COH_THROW_STREAM(IllegalStateException, getCacheName()<<
-                ": key=" << vKey << " is outside the ContinuousQueryCache")
-        }
+    return hCache->invoke(vKey, hAgent);
     }
 
 Map::View ContinuousQueryCache::invokeAll(Collection::View vCollKeys,
@@ -800,7 +792,6 @@ Map::View ContinuousQueryCache::invokeAll(Collection::View vCollKeys,
     // underlying cache (assumption is most keys in the collection are
     // already in the ContinuousQueryCache)
     NamedCache::Handle hCache = getCache();
-    ensureSaneCache(vCollKeys);
 
     return hCache->invokeAll(vCollKeys, hAgent);
     }
@@ -823,8 +814,6 @@ Object::Holder ContinuousQueryCache::aggregate(Collection::View vCollKeys,
     // underlying cache (assumption is most keys in the collection are
     // already in the ContinuousQueryCache)
     NamedCache::View vCache = getCache();
-    ensureSaneCache(vCollKeys);
-
     return vCache->aggregate(vCollKeys, hAgent);
     }
 
@@ -1410,22 +1399,6 @@ NamedCache::Handle ContinuousQueryCache::getCacheInternal() const
             }
         }
     return hCache;
-    }
-
-void ContinuousQueryCache::ensureSaneCache(Collection::View vCollKeys) const
-    {
-    NamedCache::View vCache   = getCache();
-    Set::View        vSetView = getInternalKeySet();
-
-    for (Iterator::Handle hIter = vCollKeys->iterator(); hIter->hasNext(); )
-        {
-        Object::Holder ohKey = hIter->next();
-        if (!vSetView->contains(ohKey) && vCache->containsKey(ohKey))
-            {
-            COH_THROW_STREAM(IllegalStateException, getCacheName()<<
-                    ": key=" << ohKey << " is outside the ContinuousQueryCache")
-            }
-        }
     }
 
 void ContinuousQueryCache::releaseListeners() const
