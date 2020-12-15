@@ -76,6 +76,8 @@ class ThreadLocalReferenceTest : public CxxTest::TestSuite
 
             int64_t cStart = System::getHeapAnalyzer()->getObjectCount();
                 {
+                cout << "DEBUG --> heap analyzer object count (pre loop): " << cStart << endl;
+
                 ThreadLocalReference::Handle hTLS =
                         ThreadLocalReference::create();
                 Thread::Handle hThread1 = Thread::create(
@@ -86,14 +88,21 @@ class ThreadLocalReferenceTest : public CxxTest::TestSuite
                 hThread1->start();
                 hThread2->start();
 
+                cout << "DEBUG --> heap analyzer object count (thread start): " << System::getHeapAnalyzer()->getObjectCount() << endl;
+
                 hThread1->join();
                 hThread2->join();
+
+                cout << "DEBUG --> heap analyzer object count (thread join): " << System::getHeapAnalyzer()->getObjectCount() << endl;
                 }
-            for (int32_t i = 0; i < 10 && System::getHeapAnalyzer()->getObjectCount() != cStart; ++i)
+            for (int32_t i = 0; i < 20 && System::getHeapAnalyzer()->getObjectCount() != cStart; ++i)
                 {
+                cout << "DEBUG --> heap analyzer object count (iteration " << i << "): " << System::getHeapAnalyzer()->getObjectCount() << endl;
+
                 Thread::sleep(100);
                 }
             int64_t cEnd = System::getHeapAnalyzer()->getObjectCount();
+	    cout << "DEBUG --> heap analyzer object count (post loop): " << cEnd << endl;	
             COH_ENSURE_RELATION(int64_t, cEnd, <=, cStart); // threads and TLS all cleaned up
             }
     };
