@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -270,7 +270,7 @@ bool MapEventMessage::isTruncate() const
 
 void MapEventMessage::setPriming(bool fPriming)
     {
-    m_fSynthetic = fPriming;
+    m_fPriming = fPriming;
     }
 
 bool MapEventMessage::isPriming() const
