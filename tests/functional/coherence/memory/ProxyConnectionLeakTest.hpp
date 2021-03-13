@@ -82,7 +82,7 @@ class ProxyConnectionLeakTest : public CxxTest::TestSuite
 
             // stop/start the proxy multiple times checking for leaks
             HeapAnalyzer::Handle   hHA                  = System::getHeapAnalyzer();
-            Array<int64_t>::Handle hArr                 = Array<int64_t>::create(5);
+            Array<int64_t>::Handle hArr                 = Array<int64_t>::create(10);
             size32_t               cBaselineThreadCount = 0;
             String::View           vsBaselineThreads;
             for (size32_t i = 0; i < hArr->length; ++i)
@@ -159,7 +159,7 @@ class ProxyConnectionLeakTest : public CxxTest::TestSuite
                 TS_ASSERT(hNamedCache->get(vsKey)->equals(vsValue));
                 }
 
-            // verify that all object counts are within 50 of the second iteration
+            // verify that all object counts are within 100 of the second iteration;
             // discard the first iteration
             std::cout << "Object counts per iteration: " << hArr << std::endl;
             int64_t cFirst = hArr[1];
@@ -168,11 +168,11 @@ class ProxyConnectionLeakTest : public CxxTest::TestSuite
                 int64_t cNext = hArr[i];
                 if (cFirst < cNext)
                     {
-                    TS_ASSERT_LESS_THAN(cNext - cFirst, int64_t(50));
+                    TS_ASSERT_LESS_THAN(cNext - cFirst, int64_t(100));
                     }
                 else
                     {
-                    TS_ASSERT_LESS_THAN(cFirst - cNext, int64_t(50));
+                    TS_ASSERT_LESS_THAN(cFirst - cNext, int64_t(100));
                     }
                 }
 
