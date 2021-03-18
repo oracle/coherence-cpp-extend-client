@@ -29,7 +29,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    # Install and Set up dependencies/tools which are required by build
+    # Install and set up dependencies/tools which are required by build
     - name: Build Setup
       run: |
         TMP_DIR=`mktemp -d /tmp/ci_build_XXXXXX`
@@ -62,11 +62,17 @@ jobs:
         git diff
         ant -f prj/build.xml clean build
 
-    # Verify
-    - name: Verify
+    # Run unit tests
+    - name: Unit tests
       run: |
         . ./bin/cfglocal.sh
         ant -f prj/tests/unit/build.xml test
+
+    # Run functional tests
+    - name: Functional tests
+      run: |
+        . ./bin/cfglocal.sh
+        ant -f prj/tests/functional/build.xml test
 
     # Capture logs and test reports for diagnosing failures
     - name: Capture test logs
