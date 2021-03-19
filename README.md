@@ -1,9 +1,9 @@
 <!--
 
-  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+  Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
-  http://oss.oracle.com/licenses/upl.
+  https://oss.oracle.com/licenses/upl.
 
 -->
 -----
@@ -140,7 +140,7 @@ $JAVA_HOME/bin/java -Dcoherence.pof.enabled=true -Dcoherence.log.level=6 -jar co
 Windows command prompt:
 
 ```shell script
-"%JAVA_HOME%/bin/java" -coherence.pof.enabled=true -Dcoherence.log.level=6 -jar coherence.jar
+"%JAVA_HOME%/bin/java" -Dcoherence.pof.enabled=true -Dcoherence.log.level=6 -jar coherence.jar
 ```
 
 ## Run the `coherence::net::CacheFactory::main()` (console) using sanka
@@ -341,4 +341,3 @@ files will produce warnings when compiling with GCC
 cd ../prj/tests/unit (or cd ../prj/tests/functional)
 ant -Dbuild.type=release build test
 ```
-
