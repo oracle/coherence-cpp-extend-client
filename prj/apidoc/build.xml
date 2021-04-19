@@ -125,7 +125,6 @@
       <arg line="${include.dir}/public"/>
       <arg line="${build.doc.dir}/api/html"/>
       <arg line="${prj.dir}/apidoc/exclude.txt"/>
-      <arg line="${tools.platform.dir}"/>
     </java>
   </target>
 
