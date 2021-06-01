@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -188,6 +188,30 @@ class DefaultOperationalContextTest : public CxxTest::TestSuite
                     ->ensureOperationalContext());
             TS_ASSERT(Logger::getLogger()->getLevel() == getCustomLogLevel());
             CacheFactory::shutdown();
+            }
+
+        /**
+        * COH-23599
+        */
+        void testConfigThroughEnvironmentVariable()
+            {
+            String::View vsOverride = System::setProperty("coherence.override", "config/system-property-override.xml");
+
+            System::setProperty("test.edition", "DC");
+
+            DefaultOperationalContext::View vContext = DefaultOperationalContext::create();
+
+            TS_ASSERT_EQUALS(DefaultOperationalContext::edition_dc, vContext->getEdition());
+
+            // revert the "coherence.override" property back to its previous value (or clear it)
+            if (NULL == vsOverride)
+                {
+                System::clearProperty("coherence.override");
+                }
+            else
+                {
+                System::setProperty("coherence.override", vsOverride);
+                }
             }
 
         void verifyDefaultConfig(OperationalContext::View vContext)

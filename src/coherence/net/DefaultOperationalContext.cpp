@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -63,6 +63,11 @@ DefaultOperationalContext::DefaultOperationalContext(
         {
         vXmlCoherence = getDefaultOperationalConfig();
         }
+
+    // COH-23599 - load system property overrides
+    XmlElement::Handle hXml = cast<XmlElement::Handle>(vXmlCoherence->clone());
+    XmlHelper::replaceSystemProperties(hXml, "system-property");
+    vXmlCoherence = hXml;
 
     if (!vXmlCoherence->getName()->equals("coherence"))
         {
@@ -243,7 +248,7 @@ DefaultOperationalContext::DefaultOperationalContext(
         String::View      vsAddressProvider   =
                 vXmlAddressProvider->getAttribute("id")->getString();
 
-        COH_LOG("Declaring address provider \"" << vsAddressProvider << "\" = " 
+        COH_LOG("Declaring address provider \"" << vsAddressProvider << "\" = "
                 << vXmlAddressProvider, 7);
 
         ConfigurableAddressProviderFactory::Handle hCAPFactory = ConfigurableAddressProviderFactory::create();

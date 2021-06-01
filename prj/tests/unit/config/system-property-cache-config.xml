@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2021, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  https://oss.oracle.com/licenses/upl.
+-->
+<!DOCTYPE cache-config SYSTEM "cache-config.dtd">
+
+<cache-config>
+  <caching-scheme-mapping>
+    <cache-mapping>
+      <cache-name system-property="test.cachename">INVALID</cache-name>
+      <scheme-name>local-example</scheme-name>
+    </cache-mapping>
+  </caching-scheme-mapping>
+
+  <caching-schemes>
+    <local-scheme>
+      <scheme-name>local-example</scheme-name>
+    </local-scheme>
+  </caching-schemes>
+</cache-config>

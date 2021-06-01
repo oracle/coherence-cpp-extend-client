@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -86,7 +86,7 @@ COH_OPEN_NAMESPACE_ANON(DefaultConfigurableCacheFactory)
 * with the associated ContinuousQueryCache.
 *
 * @since 12.2.1.4
-*/ 
+*/
 class ViewCacheNameSupplier
         : public class_spec<ViewCacheNameSupplier,
           extends<Object>,
@@ -113,9 +113,9 @@ class ViewCacheNameSupplier
         * Blocked copy constructor.
         */
         ViewCacheNameSupplier(const ViewCacheNameSupplier&);
-    
+
     // ----- Supplier interface -----------------------------------------
-    
+
     public:
         virtual Object::Holder get() const
             {
@@ -126,11 +126,11 @@ class ViewCacheNameSupplier
             {
             return f_vQueryCache->getCache()->getCacheName();
             }
-    
+
     // ----- data members -----------------------------------------------
-    
+
     protected:
-        FinalView<ContinuousQueryCache> f_vQueryCache; 
+        FinalView<ContinuousQueryCache> f_vQueryCache;
     };
 
 /**
@@ -140,7 +140,7 @@ class ViewCacheNameSupplier
 * This is primarily used by view-scheme processing.
 *
 * @since 12.2.1.4
-*/ 
+*/
 class ViewCacheSupplier
         : public class_spec<ViewCacheSupplier,
           extends<Object>,
@@ -169,9 +169,9 @@ class ViewCacheSupplier
         * Blocked copy constructor.
         */
         ViewCacheSupplier(const ViewCacheSupplier&);
-    
+
     // ----- Supplier interface -----------------------------------------
-    
+
     public:
         virtual Object::Holder get() const
             {
@@ -182,11 +182,11 @@ class ViewCacheSupplier
             {
             return m_hCacheFactory->configureCache(f_vCacheInfo, cast<XmlElement::View>(f_vXmlBackScheme->clone()));
             }
-    
+
     // ----- data members -----------------------------------------------
-    
+
     protected:
-        mutable FinalHandle<DefaultConfigurableCacheFactory> m_hCacheFactory; 
+        mutable FinalHandle<DefaultConfigurableCacheFactory> m_hCacheFactory;
         FinalView<DefaultConfigurableCacheFactory::CacheInfo> f_vCacheInfo;
         FinalView<XmlElement> f_vXmlBackScheme;
     };
@@ -972,7 +972,7 @@ MapListener::Handle DefaultConfigurableCacheFactory::instantiateMapListener
         COH_THROW_STREAM (IllegalArgumentException, "Not a listener:\n" << vXmlClass);
         }
     }
-    
+
 NamedCache::Handle DefaultConfigurableCacheFactory::ensureRemoteCache
     (CacheInfo::View vInfo, XmlElement::View vXmlScheme)
     {
@@ -1068,7 +1068,7 @@ NamedCache::Handle DefaultConfigurableCacheFactory::ensureCacheView
         }
 
     Supplier::Handle hCacheSupplier = ViewCacheSupplier::create(this, vInfo, cast<XmlElement::View>(hXmlBack->clone()));
-    ContinuousQueryCache::Handle hQueryCache = ContinuousQueryCache::create((Supplier::View) hCacheSupplier, 
+    ContinuousQueryCache::Handle hQueryCache = ContinuousQueryCache::create((Supplier::View) hCacheSupplier,
                                                                             hFilter,
                                                                             true,
                                                                             hListener,
@@ -1237,7 +1237,7 @@ void DefaultConfigurableCacheFactory::resolveSerializer(XmlElement::Handle hXmlC
         vXmlSerializer = getConfig()->findElement("defaults/serializer");
         if (vXmlSerializer != NULL)
             {
-            // Need to clone the serializer element, otherwise 
+            // Need to clone the serializer element, otherwise
             // RemoteService::doConfigure() will fail on an ensureElement()
             // on the initiator-config.
             hXmlConfig->getElementList()->add(vXmlSerializer->clone());
@@ -1245,7 +1245,7 @@ void DefaultConfigurableCacheFactory::resolveSerializer(XmlElement::Handle hXmlC
         }
     }
 
-void DefaultConfigurableCacheFactory::verifyMapListener(CacheInfo::View vInfo, Map::Handle hMap, 
+void DefaultConfigurableCacheFactory::verifyMapListener(CacheInfo::View vInfo, Map::Handle hMap,
         XmlElement::View vXmlScheme, Map::Handle hMapListeners)
     {
     // CONSIDER: allow to configure filter-based listener and replace
@@ -1292,7 +1292,7 @@ void DefaultConfigurableCacheFactory::verifyMapListener(CacheInfo::View vInfo, M
             }
         catch (ClassCastException::View)
             {
-            COH_THROW_STREAM(IllegalArgumentException, 
+            COH_THROW_STREAM(IllegalArgumentException,
                 "Map is not observable: " << Class::getClassName(hMap));
             }
         }
@@ -1403,6 +1403,14 @@ void DefaultConfigurableCacheFactory::setConfig(XmlElement::View vXml)
     if (NULL != vXmlCache)
         {
         COH_THROW (UnsupportedOperationException::create("already configured"));
+        }
+
+    if (NULL != vXml)
+        {
+        // COH-23599 - load system property overrides
+        XmlElement::Handle hXml = cast<XmlElement::Handle>(vXml->clone());
+        XmlHelper::replaceSystemProperties(hXml, "system-property");
+        vXml = hXml;
         }
 
     initialize(f_vXmlConfig, vXml);
