@@ -80,7 +80,6 @@ class PrimitiveTest : public CxxTest::TestSuite
             s >> flTest2;
 
             // checking floats for equality is problematic
-
             TS_ASSERT(areNearlyEqual(flTest, flTest2, 6));
 
             // with precision
@@ -149,7 +148,7 @@ class PrimitiveTest : public CxxTest::TestSuite
                 return true;
                 }
             // display the difference
-            float32_t flEpsilon = (float32_t) 1.0 / pow((float32_t) 10, nPrecision);
+            float32_t flEpsilon = 1.0f / pow(10.0f, (float32_t) nPrecision);
             std::cout << std::setprecision(std::numeric_limits<float32_t>::digits10 + 2)
                       << "\nflVal1=" << flVal1 << ", flVal2=" << flVal2 << ", flDiff="
                       << flDiff << ", flEpsilon=" << flEpsilon << std::endl;
