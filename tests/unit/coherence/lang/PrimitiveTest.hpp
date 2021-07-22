@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <math.h>
+#include <math.h> // cmath has linker errors on some machines (missing pow functions)
 #include <sstream>
 
 using namespace coherence::lang;
@@ -80,7 +80,6 @@ class PrimitiveTest : public CxxTest::TestSuite
             s >> flTest2;
 
             // checking floats for equality is problematic
-
             TS_ASSERT(areNearlyEqual(flTest, flTest2, 6));
 
             // with precision
@@ -149,7 +148,7 @@ class PrimitiveTest : public CxxTest::TestSuite
                 return true;
                 }
             // display the difference
-            float32_t flEpsilon = (float32_t) 1.0 / pow((float32_t) 10, nPrecision);
+            float64_t flEpsilon = 1.0 / pow((float32_t) 10, nPrecision); // 64 bit float for epsilon to avoid loss of precision warnings on VS2019
             std::cout << std::setprecision(std::numeric_limits<float32_t>::digits10 + 2)
                       << "\nflVal1=" << flVal1 << ", flVal2=" << flVal2 << ", flDiff="
                       << flDiff << ", flEpsilon=" << flEpsilon << std::endl;
