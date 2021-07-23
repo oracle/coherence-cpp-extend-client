@@ -8,10 +8,10 @@
 
 #include "coherence/lang.ns"
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <math.h> // cmath has linker errors on some machines (missing pow functions)
 #include <sstream>
 
 using namespace coherence::lang;
@@ -147,8 +147,9 @@ class PrimitiveTest : public CxxTest::TestSuite
                 {
                 return true;
                 }
-            // display the difference
-            float64_t flEpsilon = 1.0 / pow((float32_t) 10, nPrecision); // 64 bit float for epsilon to avoid loss of precision warnings on VS2019
+
+            // 64 bit float for epsilon to avoid loss of precision warnings on VS2019
+            float64_t flEpsilon = 1.0 / pow((float32_t) 10, nPrecision);
             std::cout << std::setprecision(std::numeric_limits<float32_t>::digits10 + 2)
                       << "\nflVal1=" << flVal1 << ", flVal2=" << flVal2 << ", flDiff="
                       << flDiff << ", flEpsilon=" << flEpsilon << std::endl;
