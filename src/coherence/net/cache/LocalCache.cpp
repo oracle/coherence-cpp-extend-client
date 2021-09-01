@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -169,18 +169,20 @@ Object::Holder LocalCache::remove(Object::View vKey)
  */
 void LocalCache::clear()
     {
-    COH_SYNCHRONIZED(this);
-    // this method is only called as a result of a call from the cache
-    // consumer, not from any internal eviction etc.
-
-    // if there is a CacheStore, tell it that all entries are being erased
-    CacheStore::Handle hStore = getCacheStore();
-    if (hStore != NULL)
+    COH_SYNCHRONIZED(this)
         {
-        hStore->eraseAll(super::keySet());
-        }
+        // this method is only called as a result of a call from the cache
+        // consumer, not from any internal eviction etc.
 
-    super::clear();
+        // if there is a CacheStore, tell it that all entries are being erased
+        CacheStore::Handle hStore = getCacheStore();
+        if (hStore != NULL)
+            {
+            hStore->eraseAll(super::keySet());
+            }
+
+        super::clear();
+        }
     }
 
 

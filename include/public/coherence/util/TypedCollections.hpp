@@ -104,7 +104,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor
                 */
                 TypedIterator(const TypedIterator& that)
-                    : super(that)
+                    : Object(that),
+                      super(that)
                     {
                     }
 
@@ -171,7 +172,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedListIterator(const TypedListIterator& that)
-                    : super(that)
+                    : Object(that),
+                      super(that)
                     {
                     }
 
@@ -304,7 +306,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedCollection(const TypedCollection& that)
-                    : super(that)
+                    : Object(that),
+                      super(that)
                     {
                     }
 
@@ -554,7 +557,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedSet(const TypedSet& that)
-                    : super(that)
+                    : Object(that),
+                      super(that)
                     {
                     }
 
@@ -1034,7 +1038,7 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedEntry(const TypedEntry& that)
-                    : super(that)
+                    : Object(that), super(that)
                     {
                     }
 
@@ -1246,7 +1250,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedMap(const TypedMap& that)
-                    : super(that),
+                    : Object(that),
+                      super(that),
                       f_vConverter(Object::self(), EntryConverter::create())
                     {
                     }
@@ -1620,7 +1625,8 @@ class COH_EXPORT TypedCollections
                 * Copy constructor.
                 */
                 TypedList(const TypedList& that)
-                    : super(that)
+                    : Object(that),
+                      super(that)
                     {
                     }
 
