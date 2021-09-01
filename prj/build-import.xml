@@ -428,6 +428,7 @@
       <else>
         <property name="cc.compiler" value="g++"/>
         <property name="cc.g++"      value="true"/>
+        <property name="extra"       value="-Wno-error=extra"/>
         <if>
           <istrue value="${cc.debug}"/>
           <then>
@@ -599,6 +600,7 @@
       <compilerarg if="cc.g++"          value="-pedantic"/>
       <compilerarg if="cc.g++"          value="-fno-stack-protector"/>
       <compilerarg if="cc.g++"          value="-Werror"/>
+      <compilerarg if="cc.g++"          value="${extra}"/>
       <compilerarg if="cc.g++"          value="-Woverloaded-virtual"/>
       <compilerarg if="cc.g++"          value="-Wunused"/>
       <compilerarg if="cc.g++"          value="-Wunused-variable"/>
