@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -168,11 +168,11 @@ class ProxyConnectionLeakTest : public CxxTest::TestSuite
                 int64_t cNext = hArr[i];
                 if (cFirst < cNext)
                     {
-                    TS_ASSERT_LESS_THAN(cNext - cFirst, int64_t(100));
+                    TS_ASSERT_LESS_THAN(cNext - cFirst, int64_t(200));
                     }
                 else
                     {
-                    TS_ASSERT_LESS_THAN(cFirst - cNext, int64_t(100));
+                    TS_ASSERT_LESS_THAN(cFirst - cNext, int64_t(200));
                     }
                 }
 
