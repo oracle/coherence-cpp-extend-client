@@ -278,8 +278,12 @@
     </antcall>
     <mkdir dir="${build.classes.dir}"/>
     <javac srcdir="${tests.dir}/common/src/java"
-           classpath="${coherence.jar}"
            destdir="${build.classes.dir}">
+      <classpath>
+        <fileset dir="${lib.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
       <include name="coherence/tests/**/*.java"/>
     </javac>
   </target>
