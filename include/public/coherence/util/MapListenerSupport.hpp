@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -417,7 +417,7 @@ class COH_EXPORT MapListenerSupport
                 * @param fSynthetic  true iff the event is caused by internal
                 *                    cache processing such as eviction or
                 *                    loading
-                ﻿* @param fPriming    a flag indicating whether or not the event
+                * @param fPriming    a flag indicating whether or not the event
                 *                    is a priming event
                 * @param vaFilters   an array of Filters that caused this event.
                 * @since 12.2.1.3.2
@@ -461,7 +461,7 @@ class COH_EXPORT MapListenerSupport
                 *                         loading
                 * @param nTransformState  the state describing how this event has
                 *                         been or should be transformed
-                ﻿* @param fPriming         a flag indicating whether or not the event
+                * @param fPriming         a flag indicating whether or not the event
                 *                         is a priming event
                 * @param vaFilters        an array of Filters that caused this event.
                 * @since 12.2.1.3.2
@@ -472,6 +472,31 @@ class COH_EXPORT MapListenerSupport
                         TransformationState nTransformState,
                         bool fPriming, ObjectArray::View vaFilters);
 
+                /**
+                * Create a new FilterEvent with no old and new values.
+                *
+                * @param hMap             the map on which the Event initially
+                *                         occurred
+                * @param nId              the events id (entry_inserted |
+                *                         entry_updated | entry_deleted)
+                * @param vKey             the key into the map
+                * @param fSynthetic       true iff the event is caused by internal
+                *                         cache processing such as eviction or
+                *                         loading
+                * @param nTransformState  the state describing how this event has
+                *                         been or should be transformed
+                * @param fPriming         a flag indicating whether or not the event
+                *                         is a priming event
+                * @param fExpired         true iff the event results from an eviction due to time
+                * @param vaFilters        an array of Filters that caused this event.
+                * @since 14.1.1.0.10
+                */
+                FilterEvent(ObservableMap::Handle hMap, int32_t nId,
+                        Object::View vKey, Object::View vValueOld,
+                        Object::View vValueNew, bool fSynthetic,
+                        TransformationState nTransformState,
+                        bool fPriming, bool fExpired, ObjectArray::View vaFilters);
+    
             // ----- FilterEvent interface ------------------------------
 
             public:

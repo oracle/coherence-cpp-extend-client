@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -10,14 +10,17 @@
 
 #include "coherence/net/CacheFactory.hpp"
 #include "coherence/net/NamedCache.hpp"
+#include "coherence/net/cache/CacheEvent.hpp"
 #include "coherence/util/ArrayList.hpp"
 #include "coherence/util/Collection.hpp"
 #include "coherence/util/Map.hpp"
 
+#include "common/TestListener.hpp"
 #include "common/TestUtils.hpp"
 
 using coherence::net::CacheFactory;
 using coherence::net::NamedCache;
+using coherence::net::cache::CacheEvent;
 using coherence::util::ArrayList;
 using coherence::util::Collection;
 using coherence::util::Map;
@@ -93,9 +96,40 @@ class CacheMapTest : public CxxTest::TestSuite
             Object::Holder oh = hCache->get(vsKey);
             TS_ASSERT(vsVal->equals(oh));
 
+            TestListener::Handle hListener = TestListener::create();
+            hCache->addMapListener(hListener);
+            std::cout << "### DEBUG SLEEPING" << "\n";
             Thread::currentThread()->sleep(1500);
             oh = hCache->get(vsKey);
             TS_ASSERT(NULL == oh);
+
+            CacheEvent::View hCacheEvent = cast<CacheEvent::View>(hListener->getEvent());
+            TS_ASSERT(hCacheEvent->isExpired())
+            }
+
+        /**
+        * Test put() with expiry (local).
+        */
+        void testPutExpiryLocal()
+            {
+            NamedCache::Handle hCache = ensureCleanCache("local-cache");
+
+            String::View vsKey = "key";
+            String::View vsVal = "val";
+
+            hCache->put(vsKey, vsVal, 1000);
+            Object::Holder oh = hCache->get(vsKey);
+            TS_ASSERT(vsVal->equals(oh));
+
+            TestListener::Handle hListener = TestListener::create();
+            hCache->addMapListener(hListener);
+
+            Thread::currentThread()->sleep(1500);
+            oh = hCache->get(vsKey);
+            TS_ASSERT(NULL == oh);
+
+            CacheEvent::View hCacheEvent = cast<CacheEvent::View>(hListener->getEvent());
+            TS_ASSERT(hCacheEvent->isExpired())
             }
 
         /**

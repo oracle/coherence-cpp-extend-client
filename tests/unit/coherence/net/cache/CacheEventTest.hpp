@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -32,6 +32,24 @@ class CacheEventTest : public CxxTest::TestSuite
                     TestObservableMap::create(), 1, String::create("key"),
                     String::create("old"), String::create("new"), true);
             TS_ASSERT(vCache->isSynthetic());
+            }
+
+        void testIsExpired()
+            {
+            CacheEvent::View vCache = CacheEvent::create(
+                TestObservableMap::create(), 1, String::create("key"),
+                String::create("old"), String::create("new"), false);
+            TS_ASSERT(!vCache->isExpired());
+
+            vCache = CacheEvent::create(
+                TestObservableMap::create(), 1, String::create("key"),
+                String::create("old"), String::create("new"), false, CacheEvent::transformable, false, false);
+            TS_ASSERT(!vCache->isExpired());
+
+            vCache = CacheEvent::create(
+                TestObservableMap::create(), 1, String::create("key"),
+                String::create("old"), String::create("new"), false, CacheEvent::transformable, false, true);
+            TS_ASSERT(vCache->isExpired());
             }
 
         void testGetDescription()

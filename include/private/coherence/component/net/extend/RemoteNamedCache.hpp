@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -429,11 +429,13 @@ class COH_EXPORT RemoteNamedCache
                 * @param nTransformState  the transformation state of
                 *                         this event
                 * @param fPriming         true if the MapEvent is a priming event
+                * @param fExpired         true if the MapEvent results from a
+                *                         time-based eviction event
                 */
                 virtual void dispatch(int32_t nEventId, Array<int64_t>::View valFilterIds,
                         Object::View vKey, Object::View vValueOld,
                         Object::View vValueNew, bool fSynthetic, int32_t nTransformState,
-                        bool fPriming);
+                        bool fPriming, bool fExpired);
 
             // ----- CacheMap interface ---------------------------------
 

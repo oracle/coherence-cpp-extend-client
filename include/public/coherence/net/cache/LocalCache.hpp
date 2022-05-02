@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -224,11 +224,37 @@ class COH_EXPORT LocalCache
                 virtual void setSynthetic(bool fSynthetic);
 
                 /**
+                * Check whether or not the currently performed operation has been initiated
+                * because the entry expired.
+                *
+                * @return true iff the entry has expired
+                * @since 14.1.1.0.10
+                */
+                virtual bool isExpired();
+
+                /**
+                * Specify whether or not the currently performed operation concerns an
+                * expired entry
+                *
+                * @param fExpired  true iff the current operation is an expiration one
+                * @since 14.1.1.0.10
+                */
+                virtual void setExpired(bool fExpired);
+
+                /**
                 * Ensure that the synthetic operation flag is set.
                 *
                 * @return the previous value of the flag
                 */
                 virtual bool ensureSynthetic();
+
+                /**
+                * Ensure that the expired operation flag is set.
+                *
+                * @return the previous value of the flag
+                * @since 14.1.1.0.10
+                */
+                virtual bool ensureExpired();
             };
 
 
