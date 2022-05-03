@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -24,7 +24,7 @@ using coherence::net::messaging::Channel;
 MapEventMessage::MapEventMessage()
     : m_nId(0), m_lFilterId(0), f_vKey(self()), f_vNewValue(self()),
       f_vOldValue(self()), m_fSynthetic(false),
-      f_alFilterIds(self()), m_nTransformState(0)
+      f_alFilterIds(self()), m_nTransformState(0), m_fExpired(false)
     {
     }
 
@@ -57,7 +57,7 @@ void MapEventMessage::run()
     else
         {
         hCache->getBinaryCache()->dispatch(getId(), getFilterIds(), getKey(),
-                getValueOld(), getValueNew(), isSynthetic(), getTransformState(), isPriming());
+                getValueOld(), getValueNew(), isSynthetic(), getTransformState(), isPriming(), isExpired());
         }
     }
 
@@ -114,6 +114,12 @@ void MapEventMessage::readExternal(PofReader::Handle hIn)
         {
         setPriming(hIn->readBoolean(8));
         }
+
+    // COH-24927
+    if (implVersion > 8)
+        {
+        setExpired(hIn->readBoolean(9));
+        }
     }
 
 void MapEventMessage::writeExternal(PofWriter::Handle hOut) const
@@ -148,10 +154,16 @@ void MapEventMessage::writeExternal(PofWriter::Handle hOut) const
         hOut->writeBoolean(7, isTruncate());
         }
 
-    // ﻿COH-18376
+    // COH-18376
     if (implVersion > 6)
         {
         hOut->writeBoolean(8, isPriming());
+        }
+
+    // COH-24927
+    if (implVersion > 8)
+        {
+        hOut->writeBoolean(9, isExpired());
         }
     }
 
@@ -172,7 +184,8 @@ String::View MapEventMessage::getDescription() const
            ", Synthetic=" << isSynthetic()       <<
            ", Transform=" << getTransformState() <<
            ", Truncate="  << isTruncate()        <<
-           ", Priming="   << isPriming());
+           ", Priming="   << isPriming()         <<
+           ", Expired="   << isExpired());
     }
 
 
@@ -277,5 +290,16 @@ bool MapEventMessage::isPriming() const
     {
     return m_fPriming;
     }
+
+void MapEventMessage::setExpired(bool fExpired)
+    {
+    m_fExpired = fExpired;
+    }
+
+bool MapEventMessage::isExpired() const
+    {
+    return m_fExpired;
+    }
+
 COH_CLOSE_NAMESPACE6
 

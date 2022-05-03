@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -333,7 +333,7 @@ bool RemoteNamedCache::BinaryCache::removeAll(Collection::View vColKeys)
 void RemoteNamedCache::BinaryCache::dispatch(int32_t nEventId,
         Array<int64_t>::View alFilterIds, Object::View vKey, Object::View vValueOld,
         Object::View vValueNew, bool fSynthetic, int32_t nTransformationState,
-        bool fPriming)
+        bool fPriming, bool fExpired)
     {
     MapListenerSupport::Handle hSupport    = getMapListenerSupport();
     int32_t                    cFilters    = alFilterIds == NULL ? 0 : alFilterIds->length;
@@ -387,7 +387,7 @@ void RemoteNamedCache::BinaryCache::dispatch(int32_t nEventId,
             hFilterArray = hListFilters->toArray(hFilterArray);
 
             hEvt = MapListenerSupport::FilterEvent::create(this, nEventId,
-                   vKey, vValueOld, vValueNew, fSynthetic, transformState, fPriming, hFilterArray);
+                   vKey, vValueOld, vValueNew, fSynthetic, transformState, fPriming, fExpired, hFilterArray);
             }
         }
 
@@ -436,7 +436,7 @@ void RemoteNamedCache::BinaryCache::dispatch(int32_t nEventId,
             {
             // MapEvent was sent by a key-based MapListener
             hEvt = CacheEvent::create(this, nEventId, vKey, vValueOld, vValueNew,
-                    fSynthetic, transformState, fPriming);
+                    fSynthetic, transformState, fPriming, fExpired);
             }
 
         RunnableCacheEvent::dispatchSafe(hEvt, vListeners,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -762,6 +762,16 @@ MapListenerSupport::FilterEvent::FilterEvent(ObservableMap::Handle hMap,
         Object::View vValueNew, bool fSynthetic, CacheEvent::TransformationState nTransformState,
         bool fPriming, ObjectArray::View vaFilters)
     : super(hMap, nId, vKey, vValueOld, vValueNew, fSynthetic, nTransformState, fPriming),
+      f_vaFilters(self(), vaFilters), f_vEvent(self(), NULL)
+    {
+    COH_ENSURE_PARAM(vaFilters);
+    }
+
+MapListenerSupport::FilterEvent::FilterEvent(ObservableMap::Handle hMap,
+        int32_t nId, Object::View vKey, Object::View vValueOld,
+        Object::View vValueNew, bool fSynthetic, CacheEvent::TransformationState nTransformState,
+        bool fPriming, bool fExpired, ObjectArray::View vaFilters)
+    : super(hMap, nId, vKey, vValueOld, vValueNew, fSynthetic, nTransformState, fPriming, fExpired),
       f_vaFilters(self(), vaFilters), f_vEvent(self(), NULL)
     {
     COH_ENSURE_PARAM(vaFilters);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -231,18 +231,34 @@ class COH_EXPORT MapEventMessage
         virtual bool isTruncate() const;
 
         /**
-        * Set whether ﻿or not the event is a priming CacheEvent.
+        * Set whether or not the event is a priming CacheEvent.
         *
         * @param fPriming  true if the event is synthetic
         */
         virtual void setPriming(bool fPriming);
 
         /**
-        * Determine whether ﻿or not the event is a priming CacheEvent.
+        * Determine whether or not the event is a priming CacheEvent.
         *
         * @return true if the MapEvent is a priming CacheEvent
         */
         virtual bool isPriming() const;
+
+        /**
+        * Set whether or not the event was caused by a time-based eviction.
+        *
+        * @param fExpired  true if the event was caused by a time-based evistion
+        * @since 14.1.1.0.10
+        */
+        virtual void setExpired(bool fExprired);
+
+        /**
+        * Determine whether or not the event was caused by a time-based eviction.
+        *
+        * @return true f the MapEvent was caused by a time-based eviction
+        * @since 14.1.1.0.10
+        */
+        virtual bool isExpired() const;
 
 
     // ----- constants ------------------------------------------------------
@@ -309,9 +325,15 @@ class COH_EXPORT MapEventMessage
         bool m_fTruncate;
 
         /**
-        * True ﻿if the event is a priming event (NearCache).
+        * True if the event is a priming event (NearCache).
         */
         bool m_fPriming;
+
+        /**
+        * Flag indicating an event resulting from expiration.
+        * @since 14.1.1.0.10
+        */
+        bool m_fExpired;
     };
 
 COH_CLOSE_NAMESPACE6

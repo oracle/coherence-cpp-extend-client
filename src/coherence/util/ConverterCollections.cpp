@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -618,7 +618,7 @@ ConverterCollections::ConverterCacheEvent::ConverterCacheEvent(
         Converter::View vConvKey, Converter::View vConvVal)
     : super(hMap, vEvent->getId(), (Object::View) NULL, (Object::View) NULL,
             (Object::View) NULL, vEvent->isSynthetic(), 
-            vEvent->getTransformState(), vEvent->isPriming()),
+            vEvent->getTransformState(), vEvent->isPriming(), vEvent->isExpired()),
       f_vEvent(self(), vEvent),
       f_vConvKey(self(), vConvKey),
       f_vConvVal(self(), vConvVal)

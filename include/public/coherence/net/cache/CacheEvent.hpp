@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -101,7 +101,7 @@ class COH_EXPORT CacheEvent
         * @param voValueNew       the new value (for insert and update events)
         * @param fSynthetic       true iff the event is caused by internal
         *                         cache processing such as eviction or loading
-    ﻿    * @param fPriming         a flag indicating whether or not the event
+        * @param fPriming         a flag indicating whether or not the event
         *                         is a priming event
         */
         CacheEvent(ObservableMap::Handle hMap, int32_t nId,
@@ -141,7 +141,7 @@ class COH_EXPORT CacheEvent
         *                         cache processing such as eviction or loading
         * @param nTransformState  the TransformationState describing how
         *                         this event has been or should be transformed
-    ﻿    * @param fPriming         a flag indicating whether or not the event
+        * @param fPriming         a flag indicating whether or not the event
         *                         is a priming event
         * @since 12.2.1.3.2
         */
@@ -149,6 +149,31 @@ class COH_EXPORT CacheEvent
                 Object::View voKey, Object::View voValueOld,
                 Object::View voValueNew, bool fSynthetic,
                 TransformationState nTransformState, bool fPriming);
+
+        /**
+        * Constructs a new CacheEvent.
+        *
+        * @param map             the ObservableMap object that fired the event
+        * @param nId             this event's id, one of (entry_inserted |
+           *                         entry_updated | entry_deleted)
+        * @param oKey            the key into the map
+        * @param oValueOld       the old value (for update and delete events)
+        * @param oValueNew       the new value (for insert and update events)
+        * @param fSynthetic      true iff the event is caused by the cache
+        *                        internal processing such as eviction or loading
+        * @param transformState  the TransformationState describing how
+        *                        this event has been or should be transformed
+        * @param fPriming        a flag indicating whether or not the event
+        *                        is a priming event
+        * @param fExpired        true iff the event results from an eviction
+        *                        due to time
+        * @since 22.06
+        */
+        CacheEvent(ObservableMap::Handle hMap, int32_t nId,
+                Object::View voKey, Object::View voValueOld,
+                Object::View voValueNew, bool fSynthetic,
+                TransformationState nTransformState, bool fPriming,
+                bool fExpired);
 
     private:
         /**
@@ -185,6 +210,15 @@ class COH_EXPORT CacheEvent
         */
         virtual bool isPriming() const;
 
+        /**
+        * Return true iff this event is caused by an entry eviction due to time limit reached.
+        * In this case the event will also be synthetic.
+        *
+        * @return true iff this event results from a timed eviction
+        * @since 22.06
+        */
+        virtual bool isExpired() const;
+
     protected:
         /**
         * {@inheritDoc}
@@ -219,6 +253,12 @@ class COH_EXPORT CacheEvent
         * @since 12.2.1.3.2
         */
         bool m_fPriming;
+
+        /**
+        * Flag indicating whether the deletion event is a result of time expiration.
+        * @since 22.06
+        */
+       bool m_fExpired;
     };
 
 COH_CLOSE_NAMESPACE3

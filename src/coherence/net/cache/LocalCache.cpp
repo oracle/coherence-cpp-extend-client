@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -52,8 +52,17 @@ class COH_EXPORT DefaultMask
                 {
                 m_fSynthetic = fSynthetic;
                 }
+        virtual bool isExpired()
+                {
+                return m_fExpired;
+                }
+        virtual void setExpired(bool fExpired)
+                {
+                m_fExpired = fExpired;
+                }
     private:
         bool m_fSynthetic;
+        bool m_fExpired;
     };
 
 class CacheLoaderKeyMask
@@ -505,24 +514,29 @@ void LocalCache::removeExpired(OldCache::Entry::Handle hEntry,
     {
     COH_SYNCHRONIZED(this)
         {
-        KeyMask::Handle hMask = getKeyMask();
-        bool            fPrev = hMask->ensureSynthetic();
+        int64_t         dtExpiry     = hEntry->getExpiryMillis();
+        bool            fExpired     = dtExpiry != 0 && (dtExpiry & ~0xFFL) < System::currentTimeMillis();
+        KeyMask::Handle hMask        = getKeyMask();
+        bool            fPrev        = hMask->ensureSynthetic();
+        bool            fPrevExpired = fExpired ? hMask->ensureExpired() : false;
 
         struct removeExpiredFinally
             {
-            removeExpiredFinally(LocalCache::KeyMask::Handle _hCache, bool _fPrev)
-                : hMask(_hCache), fPrev(_fPrev)
+            removeExpiredFinally(LocalCache::KeyMask::Handle _hCache, bool _fPrev, bool _fPrevExpired)
+                : hMask(_hCache), fPrev(_fPrev), fPrevExpired(_fPrevExpired)
                 {
                 }
 
             ~removeExpiredFinally()
                 {
                 hMask->setSynthetic(fPrev);
+                hMask->setExpired(fPrevExpired);
                 }
 
             LocalCache::KeyMask::Handle hMask;
             bool                        fPrev;
-            } finally(hMask, fPrev);
+            bool                        fPrevExpired;
+            } finally(hMask, fPrev, fPrevExpired);
 
         super::removeExpired(hEntry, fRemoveInternal);
         }
@@ -532,8 +546,15 @@ MapEvent::Handle LocalCache::instantiateMapEvent(int32_t nId,
         Object::View vKey, Object::Holder ohValueOld,
         Object::Holder ohValueNew)
     {
-    return CacheEvent::create(this, nId, vKey, ohValueOld, ohValueNew,
-            getKeyMask()->isSynthetic());
+    return CacheEvent::create(this,
+                              nId,
+                              vKey,
+                              ohValueOld,
+                              ohValueNew,
+                              getKeyMask()->isSynthetic(),
+                              CacheEvent::transformable,
+                              false,
+                              getKeyMask()->isExpired());
     }
 
 
@@ -614,6 +635,15 @@ bool LocalCache::KeyMask::isSynthetic()
     return true;
     }
 
+bool LocalCache::KeyMask::isExpired()
+    {
+    return true;
+    }
+
+void LocalCache::KeyMask::setExpired(bool /*fExpired*/)
+    {
+    }
+
 void LocalCache::KeyMask::setSynthetic(bool /*fSynthetic*/)
     {
     }
@@ -624,6 +654,16 @@ bool LocalCache::KeyMask::ensureSynthetic()
     if (!f)
         {
         setSynthetic(true);
+        }
+    return f;
+    }
+
+bool LocalCache::KeyMask::ensureExpired()
+    {
+    bool f = isExpired();
+    if (!f)
+        {
+        setExpired(true);
         }
     return f;
     }
