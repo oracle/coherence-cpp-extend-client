@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * http://oss.oracle.com/licenses/upl.
@@ -726,10 +726,6 @@ void PofHelper::skipUniformValue(ReadBuffer::BufferInput::Handle hIn,
             hIn->skip(1);
             break;
 
-        case t_octet_string:           // octet-string
-            hIn->skip(validateIncomingSize(hIn->readInt32()));
-            break;
-
         case t_char:                   // char
             switch (hIn->read() & 0xF0)
                 {
@@ -743,8 +739,18 @@ void PofHelper::skipUniformValue(ReadBuffer::BufferInput::Handle hIn,
                 }
             break;
 
+        case t_octet_string:           // octet-string
         case t_char_string:            // char-string
-            hIn->skip(validateIncomingSize(hIn->readInt32()));
+            {
+            int32_t cb = hIn->readInt32();
+
+            if (cb == v_reference_null)
+                {
+                break;
+                }
+
+            hIn->skip(validateIncomingSize(cb));
+            }
             break;
 
         case t_datetime:               // datetime
