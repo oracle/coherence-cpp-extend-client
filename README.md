@@ -83,7 +83,7 @@ for further details.
 ## Prerequisites
 
 1. A supported hardware platform and C++ compiler. See [Supported Environments for Coherence C++ Client](https://docs.oracle.com/en/middleware/standalone/coherence/14.1.1.0/install/installing-client-distribution.html#GUID-49C698DD-D34A-416D-A71C-566C32824CEA).
-1. Oracle Java 8 JDK
+1. Oracle Java 11 JDK
 1. Apache Ant version 1.7.0 or later
 1. [Ant-Contrib](http://ant-contrib.sourceforge.net/) version 1.0b3
 1. Ant-Contrib [cpptasks](http://ant-contrib.sourceforge.net/cpptasks/index.html) version 1.0b4
@@ -96,7 +96,7 @@ The Coherence for C++ build system is based on Ant. To build Coherence for C++:
 1. Download Apache Ant version 1.7.0 or later and install it at `tools/internal/common/ant`
 1. Download ant-contrib-1.0b3.jar and install it at `tools/internal/common/ant-contrib/lib`
 1. Download cpptasks-1.0b4.jar and install it at `tools/internal/common/ant-contrib/lib`
-1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 8 home
+1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 11 home
 1. `cd bin`
 1. On unix flavor platforms source `cfglocal.sh` from a bash shell (e.g. `. cfglocal.sh`).  On windows open a Visual Studio native tools command prompt and run `cfgwindows.cmd`
 1. `cd ../prj/coherence`
@@ -123,7 +123,7 @@ retrieved to illustrate the permanence of the data.
 
 Sanka is a command line tool which can be used to run the `main` method on Coherence C++ classes
 
-1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 8 home
+1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 11 home
 1. `cd bin`
 1. On unix flavor platforms source `cfglocal.sh` from a bash shell (e.g. `. cfglocal.sh`).  On windows open a Visual Studio native tools command prompt and run `cfgwindows.cmd`
 1. `cd ../prj/sanka`
@@ -333,7 +333,7 @@ files will produce warnings when compiling with GCC
 
 ## Building and running the tests
 
-1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 8 home
+1. Set the `JAVA_HOME` environment variable to point to the Oracle JDK 11 home
 1. `cd bin`
 1. On unix flavor platforms source `cfglocal.sh` from a bash shell (e.g. `. cfglocal.sh`).  On windows open a Visual Studio native tools command prompt and run `cfgwindows.cmd`
 
