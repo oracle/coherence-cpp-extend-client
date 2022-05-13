@@ -2,7 +2,7 @@
  * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 
@@ -246,7 +246,7 @@ class NamedCacheTest : public CxxTest::TestSuite
             Response::Handle hPutResponse = hNamedCacheChannel->send(cast<Request::Handle>(hPutRequest))->waitForResponse(-1);
             TS_ASSERT(hPutRequest->getTypeId() == PutRequest::type_id);
             TS_ASSERT(instanceof<NamedCacheResponse::View>(hPutResponse));
-            TS_ASSERT_EQUALS(9, hPutRequest->getImplVersion());
+            TS_ASSERT_EQUALS(10, hPutRequest->getImplVersion());
             TS_ASSERT(hPutResponse->isFailure() == false);
             TS_ASSERT(hPutRequest->getId() == hPutResponse->getRequestId());
             TS_ASSERT(hPutResponse->getTypeId() == 0);
@@ -297,7 +297,7 @@ class NamedCacheTest : public CxxTest::TestSuite
             Response::Handle hResponse = hNamedCacheChannel->send(cast<Request::Handle>(hGetRequest))->waitForResponse(-1);
             TS_ASSERT(hPutRequest->getTypeId() == PutRequest::type_id);
             TS_ASSERT(instanceof<NamedCacheResponse::View>(hResponse));
-            TS_ASSERT_EQUALS(9, hGetRequest->getImplVersion());
+            TS_ASSERT_EQUALS(10, hGetRequest->getImplVersion());
             TS_ASSERT(hResponse->isFailure() == false);
             TS_ASSERT(hGetRequest->getId() == hResponse->getRequestId());
             TS_ASSERT(hResponse->getTypeId() == 0);
