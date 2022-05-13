@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/net/extend/protocol/cache/NamedCacheFactory.hpp"
 
@@ -23,6 +23,7 @@
 #include "private/coherence/component/net/extend/protocol/cache/LockRequest.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/MapEventMessage.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/NamedCacheResponse.hpp"
+#include "private/coherence/component/net/extend/protocol/cache/NoStorageMembers.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/PartialResponse.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/PutAllRequest.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/PutRequest.hpp"
@@ -96,6 +97,9 @@ AbstractPofMessage::Handle NamedCacheFactory::instantiateMessage(
 
         case MapEventMessage::type_id:
             return MapEventMessage::create();
+
+        case NoStorageMembers::type_id:
+            return NoStorageMembers::create();
 
         case PartialResponse::type_id:
             return PartialResponse::create();
