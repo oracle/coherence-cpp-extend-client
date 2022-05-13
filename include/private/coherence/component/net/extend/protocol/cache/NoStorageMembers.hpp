@@ -9,10 +9,6 @@
 
 #include "coherence/lang.ns"
 
-#include "coherence/io/pof/PofReader.hpp"
-#include "coherence/io/pof/PofWriter.hpp"
-
-#include "private/coherence/component/net/extend/AbstractPofResponse.hpp"
 #include "private/coherence/component/net/extend/protocol/cache/NamedCacheRequest.hpp"
 
 COH_OPEN_NAMESPACE6(coherence,component,net,extend,protocol,cache)
@@ -37,6 +33,12 @@ class COH_EXPORT NoStorageMembers
          */
         NoStorageMembers();
 
+    private:
+        /**
+        * Blocked copy constructor.
+        */
+        NoStorageMembers(const NoStorageMembers&);
+
     // ----- Message interface ----------------------------------------------
 
     public:
@@ -44,19 +46,6 @@ class COH_EXPORT NoStorageMembers
          * {@inheritDoc}
          */
         virtual int32_t getTypeId() const;
-
-    // ----- PortableObject interface ---------------------------------------
-
-    public:
-        /**
-         * {@inheritDoc}
-         */
-        virtual void readExternal(PofReader::Handle hIn);
-
-        /**
-         * {@inheritDoc}
-         */
-        virtual void writeExternal(PofWriter::Handle hOut) const;
 
     // ----- internal methods -----------------------------------------------
 
