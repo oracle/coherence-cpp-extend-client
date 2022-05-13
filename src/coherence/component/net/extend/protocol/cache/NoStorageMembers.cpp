@@ -38,18 +38,6 @@ int32_t NoStorageMembers::getTypeId() const
     return type_id;
     }
 
-// ----- PortableObject interface -------------------------------------------
-
-void NoStorageMembers::readExternal(PofReader::Handle hIn)
-    {
-    NamedCacheRequest::readExternal(hIn);
-    }
-
-void NoStorageMembers::writeExternal(PofWriter::Handle hOut) const
-    {
-    NamedCacheRequest::writeExternal(hOut);
-    }
-
 // ----- internal methods ---------------------------------------------------
 
 void NoStorageMembers::onRun(AbstractPofResponse::Handle /*hResponse*/)
