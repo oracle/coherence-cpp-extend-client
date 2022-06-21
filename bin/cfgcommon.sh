@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-#  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+#  Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 #
 #  Licensed under the Universal Permissive License v 1.0 as shown at
-#  http://oss.oracle.com/licenses/upl.
+#  https://oss.oracle.com/licenses/upl.
 #
 # This script sets all environment variables necessary to build Oracle
 # Coherence for C++ on supported Unix platforms.
@@ -108,7 +108,7 @@ fi
 if [ ! -d "$JAVA_HOME" ]; then
   if [ $(uname) == "Darwin" ]; then
     # On OS X can query for JDK location
-    JAVA_HOME=`/usr/libexec/java_home -v 1.8 2>&1`
+    JAVA_HOME=`/usr/libexec/java_home -v 11 2>&1`
   fi
 fi
 
