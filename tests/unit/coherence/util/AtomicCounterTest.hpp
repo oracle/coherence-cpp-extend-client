@@ -189,11 +189,14 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     ahThreads[x] = Thread::create(AtomicIncrementor_5::create(hcAtomic));
                     }
                 ahThreads[x]->start();
+                Thread::yield();
                 }
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                hcAtomic->wait(100); // Give the threads a chance to spin up
+                // give the incrementor threads time to start and enter the synchronized block;
+                // COH-26096 - 100ms may not be long enough on slow machines
+                hcAtomic->wait(1000);
                 hcAtomic->notifyAll();
                 }
 
@@ -225,11 +228,14 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     ahThreads[x] = Thread::create(AtomicDecrementor_5::create(hcAtomic));
                     }
                 ahThreads[x]->start();
+                Thread::yield();
                 }
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                hcAtomic->wait(100); // Give the threads a chance to spin up
+                // give the incrementor threads time to start and enter the synchronized block;
+                // COH-26096 - 100ms may not be long enough on slow machines
+                hcAtomic->wait(1000);
                 hcAtomic->notifyAll();
                 }
 
