@@ -108,7 +108,7 @@ fi
 if [ ! -d "$JAVA_HOME" ]; then
   if [ $(uname) == "Darwin" ]; then
     # On OS X can query for JDK location
-    JAVA_HOME=`/usr/libexec/java_home -v 11 2>&1`
+    JAVA_HOME=`/usr/libexec/java_home -v 17 2>&1`
   fi
 fi
 
