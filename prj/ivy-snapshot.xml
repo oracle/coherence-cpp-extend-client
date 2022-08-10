@@ -3,15 +3,12 @@
   Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
-  http://oss.oracle.com/licenses/upl.
+  https://oss.oracle.com/licenses/upl.
 -->
 <ivy-module version="2.0">
   <info organisation="com.oracle" module="coherence"/>
   <dependencies>
     <dependency org="${build.groupId_maven}" name="coherence" rev="${build.version_maven}" changing="true"/>
-    <dependency org="com.sun.xml.bind" name="jaxb-core" rev="2.3.0.1" conf="default"/>
-    <dependency org="com.sun.xml.bind" name="jaxb-impl" rev="2.3.5" conf="default"/>
-    <dependency org="jakarta.xml.bind" name="jakarta.xml.bind-api" rev="2.3.3" conf="default"/>
     <exclude org="*" ext="*" type="source"/>
     <exclude org="*" ext="*" type="javadoc"/>
   </dependencies>

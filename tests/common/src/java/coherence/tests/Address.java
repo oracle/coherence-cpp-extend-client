@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 package coherence.tests;
 
@@ -14,12 +14,13 @@ import com.tangosol.io.pof.PofWriter;
 import com.tangosol.io.pof.PortableObject;
 
 import com.tangosol.util.Base;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
+
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAccessType;
 
 public class Address
-    extends Base
-    implements PortableObject, Serializable
+        extends Base
+        implements PortableObject, Serializable
     {
     // ----- constructors ---------------------------------------------------
 
@@ -105,7 +106,7 @@ public class Address
             + m_sCity + ", m_sState=" + m_sState + ", m_sStreet="
             + m_sStreet + ", m_sZip=" + m_sZip + "}";
         }
-        
+
     public boolean equals(Object o)
         {
         if (o == this)

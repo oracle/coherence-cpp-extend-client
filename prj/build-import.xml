@@ -3,7 +3,7 @@
   Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
-  http://oss.oracle.com/licenses/upl.
+  https://oss.oracle.com/licenses/upl.
 -->
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 <!-- ANT build file that contains common build properties, paths, task     -->
@@ -75,7 +75,7 @@
   <property  name="ivy.path.internal"               value="${ivy.path.public}"/>
   <property  name="ivy.cache"                       value="${build.dir}/ivycache"/>
   <property  name="ivy.jar.dir"                     value="${tools.common.dir}/ant-contrib/lib"/>
-  <property  name="ivy.version"                     value="2.4.0"/>
+  <property  name="ivy.version"                     value="2.5.0"/>
   <property  name="ivy.jar"                         value="${ivy.jar.dir}/ivy-${ivy.version}.jar"/>
   <property  name="ivy.file"                        value="ivy.xml"/>
   <available property="ivy-exists"                  file="${ivy.jar}"/>
