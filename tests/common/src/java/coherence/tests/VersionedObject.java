@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 package coherence.tests;
 
@@ -44,7 +44,7 @@ public class VersionedObject
 
     public void incrementVersion()
         {
-        m_LVersion = new Long(m_LVersion.longValue() + 1);
+        m_LVersion = m_LVersion + 1;
         }
 
 
@@ -56,7 +56,7 @@ public class VersionedObject
     public void readExternal(PofReader in)
             throws IOException
         {
-        m_LVersion = new Long(in.readLong(0));
+        m_LVersion = in.readLong(0);
         }
 
     /**
@@ -65,11 +65,11 @@ public class VersionedObject
     public void writeExternal(PofWriter out)
             throws IOException
         {
-        out.writeLong(0, m_LVersion.longValue());
+        out.writeLong(0, m_LVersion);
         }
 
 
     // ----- data members ---------------------------------------------------
 
-    private Long   m_LVersion;
+    private Long m_LVersion;
     }
