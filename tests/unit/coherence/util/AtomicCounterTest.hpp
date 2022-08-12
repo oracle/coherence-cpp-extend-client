@@ -33,7 +33,8 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
         protected:
             AtomicIncrementor_1(AtomicCounter::Handle hc)
-                : COH_NO_WARN(m_hcAtomic(self(), hc))
+                : COH_NO_WARN(m_hcAtomic(self(), hc)),
+                  f_vMonitor(self(), Object::create())
                 {
                 }
 
@@ -44,6 +45,12 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
                 COH_SYNCHRONIZED(hWord)
                     {
+                    // notify the test thread that this incrementor thread has started
+                    COH_SYNCHRONIZED(f_vMonitor)
+                        {
+                        f_vMonitor->notify();
+                        }
+
                     hWord->wait();
                     }
 
@@ -52,9 +59,15 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     m_hcAtomic->postIncrement();
                     }
                 }
+            
+            virtual Object::View getMonitor() const
+                {
+                return f_vMonitor;
+                }
 
         protected:
             MemberHandle<AtomicCounter> m_hcAtomic;
+            FinalView<Object>           f_vMonitor;
         };
 
         /**
@@ -70,7 +83,8 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
         protected:
             AtomicIncrementor_5(AtomicCounter::Handle hc)
-            : COH_NO_WARN(m_hcAtomic(self(), hc))
+            : COH_NO_WARN(m_hcAtomic(self(), hc)),
+              f_vMonitor(self(), Object::create())
                 {
                 }
 
@@ -81,6 +95,12 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
                 COH_SYNCHRONIZED(hWord)
                     {
+                    // notify the test thread that this incrementor thread has started
+                    COH_SYNCHRONIZED(f_vMonitor)
+                        {
+                        f_vMonitor->notify();
+                        }
+
                     hWord->wait();
                     }
 
@@ -89,9 +109,15 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     m_hcAtomic->postIncrement(5);
                     }
                 }
+            
+            virtual Object::View getMonitor() const
+                {
+                return f_vMonitor;
+                }
 
         protected:
             MemberHandle<AtomicCounter> m_hcAtomic;
+            FinalView<Object>           f_vMonitor;
         };
 
         /**
@@ -107,7 +133,8 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
         protected:
             AtomicDecrementor_1(AtomicCounter::Handle hc)
-                : COH_NO_WARN(m_hcAtomic(self(), hc))
+                : COH_NO_WARN(m_hcAtomic(self(), hc)),
+                  f_vMonitor(self(), Object::create())
                 {
                 }
 
@@ -118,6 +145,12 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
                 COH_SYNCHRONIZED(hWord)
                     {
+                    // notify the test thread that this decrementor thread has started
+                    COH_SYNCHRONIZED(f_vMonitor)
+                        {
+                        f_vMonitor->notify();
+                        }
+
                     hWord->wait();
                     }
 
@@ -127,8 +160,14 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     }
                 }
 
+            virtual Object::View getMonitor() const
+                {
+                return f_vMonitor;
+                }
+
         protected:
             MemberHandle<AtomicCounter> m_hcAtomic;
+            FinalView<Object>           f_vMonitor;
         };
 
         /**
@@ -144,7 +183,8 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
         protected:
             AtomicDecrementor_5(AtomicCounter::Handle hc)
-            : COH_NO_WARN(m_hcAtomic(self(), hc))
+            : COH_NO_WARN(m_hcAtomic(self(), hc)),
+              f_vMonitor(self(), Object::create())
                 {
                 }
 
@@ -155,6 +195,12 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
                 COH_SYNCHRONIZED(hWord)
                     {
+                    // notify the test thread that this decrementor thread has started
+                    COH_SYNCHRONIZED(f_vMonitor)
+                        {
+                        f_vMonitor->notify();
+                        }
+
                     hWord->wait();
                     }
 
@@ -164,8 +210,14 @@ class AtomicCounterTest : public CxxTest::TestSuite
                     }
                 }
 
+            virtual Object::View getMonitor() const
+                {
+                return f_vMonitor;
+                }
+
         protected:
             MemberHandle<AtomicCounter> m_hcAtomic;
+            FinalView<Object>           f_vMonitor;
         };
 
     public:
@@ -180,23 +232,34 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             for (int32_t x = 0; x < 10; ++x)
                 {
+                Object::View vMonitor;
+
                 if (x < 5)
                     {
-                    ahThreads[x] = Thread::create(AtomicIncrementor_1::create(hcAtomic));
+                    AtomicIncrementor_1::Handle hIncrementor = AtomicIncrementor_1::create(hcAtomic);
+
+                    vMonitor     = hIncrementor->getMonitor();
+                    ahThreads[x] = Thread::create(hIncrementor);
                     }
                 else
                     {
-                    ahThreads[x] = Thread::create(AtomicIncrementor_5::create(hcAtomic));
+                    AtomicIncrementor_5::Handle hIncrementor = AtomicIncrementor_5::create(hcAtomic);
+
+                    vMonitor     = hIncrementor->getMonitor();
+                    ahThreads[x] = Thread::create(hIncrementor);
                     }
-                ahThreads[x]->start();
-                Thread::yield();
+
+                COH_SYNCHRONIZED(vMonitor)
+                    {
+                    ahThreads[x]->start();
+                    vMonitor->wait();
+                    // once we get here, the incrementor thread has started and is in the hcAtomic synchronized block
+                    }
                 }
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                // give the incrementor threads time to start and enter the synchronized block;
-                // COH-26096 - 100ms may not be long enough on slow machines
-                hcAtomic->wait(1000);
+                // all incrementor threads must be in hcAtomic->wait() by this point
                 hcAtomic->notifyAll();
                 }
 
@@ -219,23 +282,34 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             for (int32_t x = 0; x < 10; ++x)
                 {
+                Object::View vMonitor;
+
                 if (x < 5)
                     {
-                    ahThreads[x] = Thread::create(AtomicDecrementor_1::create(hcAtomic));
+                    AtomicDecrementor_1::Handle hDecrementor = AtomicDecrementor_1::create(hcAtomic);
+
+                    vMonitor     = hDecrementor->getMonitor();
+                    ahThreads[x] = Thread::create(hDecrementor);
                     }
                 else
                     {
-                    ahThreads[x] = Thread::create(AtomicDecrementor_5::create(hcAtomic));
+                    AtomicDecrementor_5::Handle hDecrementor = AtomicDecrementor_5::create(hcAtomic);
+
+                    vMonitor     = hDecrementor->getMonitor();
+                    ahThreads[x] = Thread::create(hDecrementor);
                     }
-                ahThreads[x]->start();
-                Thread::yield();
+
+                COH_SYNCHRONIZED(vMonitor)
+                    {
+                    ahThreads[x]->start();
+                    vMonitor->wait();
+                    // once we get here, the decrementor thread has started and is in the hcAtomic synchronized block
+                    }
                 }
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                // give the incrementor threads time to start and enter the synchronized block;
-                // COH-26096 - 100ms may not be long enough on slow machines
-                hcAtomic->wait(1000);
+                // all decrementor threads must be in hcAtomic->wait() by this point
                 hcAtomic->notifyAll();
                 }
 
@@ -374,4 +448,3 @@ class AtomicCounterTest : public CxxTest::TestSuite
             TS_ASSERT(hcAtomic->getCount() == 25);
             }
     };
-
