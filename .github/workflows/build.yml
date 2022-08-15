@@ -54,6 +54,11 @@ jobs:
         wget --tries=3 https://sourceforge.net/projects/cxxtest/files/cxxtest/3.10.1/cxxtest-3.10.1.zip/download -O $TMP_DIR/cxxtest.zip
         unzip $TMP_DIR/cxxtest.zip -d tools/internal/common
 
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
     # Build
     - name: Build
       run: |
