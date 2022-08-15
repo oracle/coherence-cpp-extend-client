@@ -15,9 +15,6 @@ import com.tangosol.io.pof.PortableObject;
 
 import com.tangosol.util.Base;
 
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAccessType;
-
 public class Address
         extends Base
         implements PortableObject, Serializable
