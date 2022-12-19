@@ -105,18 +105,18 @@ class COH_EXPORT PosixSocket
             // disable sig-pipe (platform specific). We must be ready to deal
             // with SIG_PIPE in the case that the remote side of the socket
             // disconnects, there are a few ways to do this:
-#ifdef SO_NOSIGPIPE // BSD/OSX
+#ifdef SO_NOSIGPIPE // BSD/OSX and Solaris 11
             // disable the signal for this socket, and rely on the EPIPE error
             // code
             int nValue = 1;
-            COH_ENSURE_SOCKET(setsockopt(nSocket, SOL_SOCKET, SO_NOSIGPIPE, (void*) &nValue, sizeof(nValue)));
+            COH_ENSURE_SOCKET(setsockopt(nSocket, SOL_SOCKET, SO_NOSIGPIPE, (void*) &nValue, (socklen_t) sizeof(nValue)));
 #elif defined(MSG_NOSIGNAL) // Linux
             // disable the signal as part of each send/recv operation, and
             // rely on EPIPE
             // used in send/recv to disable signals, see transfer() method
             m_nRxFlags |= MSG_NOSIGNAL;
             m_nTxFlags |= MSG_NOSIGNAL;
-#else // Solaris
+#else // Solaris 10
             // Disabling signals on a per-socket basis is not supported on
             // this platform. Disable the signal at the process level.
             static bool fFirst = true;
