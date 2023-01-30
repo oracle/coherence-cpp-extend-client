@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/net/cache/ContinuousQueryCache.hpp"
 
@@ -1347,34 +1347,6 @@ void ContinuousQueryCache::ensureSynchronized(bool fReload) const
         }
     }
 
-bool ContinuousQueryCache::isEventDeferred(Object::View vKey) const
-    {
-    bool fDeferred = false;
-
-    Map::Handle hMapSyncReq = m_hMapSyncReq;
-    if (hMapSyncReq != NULL)
-        {
-        if (getState() <= state_configuring)
-            {
-            // since the listeners are being configured and the local
-            // cache is being populated, assume that the event is
-            // being processed out-of-order and requires a subsequent
-            // synchronization of the corresponding value
-            hMapSyncReq->put(vKey, NULL);
-            fDeferred = true;
-            }
-        else
-            {
-            // since an event has arrived after the configuration
-            // completed, the event automatically resolves the sync
-            // requirement
-            hMapSyncReq->keySet()->remove(vKey);
-            }
-        }
-
-    return fDeferred;
-    }
-
 bool ContinuousQueryCache::removeBlind(Object::View vKey)
     {
     checkReadOnly();
@@ -1486,13 +1458,16 @@ class COH_EXPORT DeactivationListener
             // "truncate" event
             ContinuousQueryCache::Handle hQueryCache   = f_hQueryCache;
             ObservableMap::Handle        internalCache = hQueryCache->getInternalCache();
-            if (instanceof<ObservableHashMap::Handle>(internalCache))
+            if (!hQueryCache->isEventDeferred(Class::getTypeName(typeid(this))))
                 {
-                cast<ObservableHashMap::Handle>(internalCache)->truncate();
-                }
-            else
-                {
-                internalCache->clear();
+                if (instanceof<ObservableHashMap::Handle>(internalCache))
+                    {
+                    cast<ObservableHashMap::Handle>(internalCache)->truncate();
+                    }
+                else
+                    {
+                    internalCache->clear();
+                    }
                 }
             };
 
@@ -1539,6 +1514,43 @@ void ContinuousQueryCache::unregisterDeactivationListener() const
            }
        }
    }
+
+bool ContinuousQueryCache::isEventDeferred(Object::View vKey) const
+    {
+    bool fDeferred = false;
+
+    Map::Handle hMapSyncReq = m_hMapSyncReq;
+    if (hMapSyncReq != NULL)
+        {
+        if (getState() <= state_configuring)
+            {
+            // handle a truncation event being received during configuration
+            // clear any currently pending events.
+            if (Class::getTypeName(typeid(DeactivationListener))->equals(vKey))
+                {
+                hMapSyncReq->clear();
+                }
+            else
+                {
+                // since the listeners are being configured and the local
+                // cache is being populated, assume that the event is
+                // being processed out-of-order and requires a subsequent
+                // synchronization of the corresponding value
+                hMapSyncReq->put(vKey, NULL);
+                }
+            fDeferred = true;
+            }
+        else
+            {
+            // since an event has arrived after the configuration
+            // completed, the event automatically resolves the sync
+            // requirement
+            hMapSyncReq->keySet()->remove(vKey);
+            }
+        }
+
+    return fDeferred;
+    }
 
 
 // ----- Object interface ---------------------------------------------------
