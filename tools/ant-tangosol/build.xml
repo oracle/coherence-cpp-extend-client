@@ -39,7 +39,7 @@
   <target name="build" description="Build the custom Ant task library.">
     <mkdir dir="${build.classes.dir}"/>
 
-    <javac srcdir="${src.dir}" source="11" destdir="${build.classes.dir}"
+    <javac srcdir="${src.dir}" source="8" destdir="${build.classes.dir}"
       classpath="../ant/lib/ant.jar"/>
 
     <mkdir dir="${build.lib.dir}"/>
