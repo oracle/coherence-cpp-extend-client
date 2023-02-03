@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 package com.xtangosol.tools.ant;
 
@@ -16,6 +16,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
 * Ant task that generates convenience C++ namespace include files.
@@ -242,6 +244,7 @@ public class GenerateNamespaceIncludesAntTask
             writer.println();
 
             // include all files
+            Arrays.sort(aFileInclude, Comparator.comparing(File::getName));
             for (int i = 0, c = aFileInclude.length; i < c; ++i)
                 {
                 String sFileName = aFileInclude[i].getName();
