@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_SOCKET_HPP
 #define COH_SOCKET_HPP
@@ -231,19 +231,36 @@ class COH_EXPORT Socket
         virtual int32_t getSendBufferSize() const;
 
         /**
-        * Set the send and receive timeout.
+        * Set the Socket's send and receive timeout.
         *
         * @param cMillis  the timeout, or 0 to disable the timeout
         */
         virtual void setSoTimeout(int32_t cMillis);
 
         /**
-        * Return the send and receive timeout.
+        * Return the Socket's send and receive timeout.
         *
         * @return the send and receive timeout
         */
         virtual int32_t getSoTimeout() const;
 
+        /**
+        * Set the amount of time to wait in a write call before throwing a
+        * SocketTimeoutException.
+        *
+        * @param cMillis  the timeout, or 0 to disable the timeout
+        *
+        * @since 14.1.1.0.13
+        */
+        virtual void setSendTimeout(int32_t cMillis);
+
+        /**
+        * Get the amount of time to wait in a write call before throwing a
+        * SocketTimeoutException.
+        *
+        * @since 14.1.1.0.13
+        */
+        virtual int32_t getSendTimeout() const;
 
         // ----- inner class: SocketInput -----------------------------------
 
@@ -470,6 +487,13 @@ class COH_EXPORT Socket
         * The configured socket timeout.
         */
         int32_t m_cMillisTimeout;
+
+        /**
+        * The send timeout.
+        *
+        * @since 14.1.1.0.13
+        */
+        int32_t m_cMillisSendTimeout;
 
         /**
         * The current SocketInput for this Socket.

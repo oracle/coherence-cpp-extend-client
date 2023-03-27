@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/util/TcpInitiator.hpp"
 
@@ -99,6 +99,9 @@ void TcpInitiator::configureSocket(Socket::Handle hSocket) const
         int64_t cMillis = getLingerTimeout();
         int32_t cSecs   = cMillis >= 0 ? (int32_t) (cMillis / 1000L) : -1; // seconds
         TcpUtil::setSoLinger(hSocket, cSecs);
+
+        // wait a maximum of request timeout for a message send to complete
+        hSocket->setSendTimeout(getRequestTimeout());
         }
     catch (Exception::View e)
         {

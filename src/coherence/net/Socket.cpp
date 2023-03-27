@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/net/Socket.hpp"
 
@@ -31,8 +31,8 @@ Socket::Socket(NativeSocket* pNative)
         : m_pNative(pNative ? pNative : NativeSocket::create()),
           f_vAddrLocal(self(),  NULL, /*fMutable*/ true),
           f_vAddrRemote(self(), NULL, /*fMutable*/ true),
-          m_cMillisTimeout(0), m_hInput(self()), m_hOutput(self()),
-          m_fClosed(false)
+          m_cMillisTimeout(0), m_cMillisSendTimeout(0),
+          m_hInput(self()), m_hOutput(self()), m_fClosed(false)
     {
     if (pNative)
         {
@@ -294,6 +294,16 @@ int32_t Socket::getSoTimeout() const
     return m_cMillisTimeout;
     }
 
+void Socket::setSendTimeout(int32_t cMillis)
+    {
+    m_cMillisSendTimeout = cMillis < 0 ? 0 : cMillis;
+    }
+
+int32_t Socket::getSendTimeout() const
+    {
+    return m_cMillisSendTimeout;
+    }
+
 NativeSocket* Socket::ensureNativeSocket(bool fEnsureConnected)
     {
     if (isClosed())
@@ -374,7 +384,7 @@ size32_t Socket::readInternal(octet_t* ab, size32_t cb)
 
 void Socket::writeInternal(const octet_t* ab, size32_t cb)
     {
-    int64_t cMillis        = m_cMillisTimeout;
+    int64_t cMillis        = getSendTimeout();
     int64_t cMillisIntr    = System::getInterruptResolution();
     int64_t cMillisTimeout = Thread::remainingTimeoutMillis();
 
