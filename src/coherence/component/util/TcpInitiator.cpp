@@ -101,7 +101,7 @@ void TcpInitiator::configureSocket(Socket::Handle hSocket) const
         TcpUtil::setSoLinger(hSocket, cSecs);
 
         // wait a maximum of request timeout for a message send to complete
-        hSocket->setSendTimeout(getRequestTimeout());
+        hSocket->setSendTimeout((int32_t) getRequestTimeout());
         }
     catch (Exception::View e)
         {
