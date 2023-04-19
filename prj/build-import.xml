@@ -631,7 +631,6 @@
       <compilerarg if="cc.sunpro"       value="-D_POSIX_PTHREAD_SEMANTICS"/>
       <compilerarg if="cc.sunpro.m64"   value="-m64"/>
       <compilerarg if="cc.sunpro.m32"   value="-m32"/>
-      <compilerarg if="env.os.linux"    value="-fabi-version=2"/>
 
       <defineset if="cc.define" define="${cc.define}">
           <define name="COH_BUILD_INFO" value="${build.number}"/>
