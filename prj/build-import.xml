@@ -605,7 +605,7 @@
       <compilerarg if="cc.g++"          value="-Wunused"/>
       <compilerarg if="cc.g++"          value="-Wunused-variable"/>
       <compilerarg if="cc.g++"          value="-Wunused-parameter"/>
-      <compilerarg if="cc.g++"          value="-Wabi"/>
+      <!-- compilerarg if="cc.g++"          value="-Wabi"/ --><!-- re-add if a fixed ABI version is used -->
       <compilerarg if="cc.g++"          value="-Wsign-compare"/>
       <compilerarg if="cc.g++"          value="-Wfloat-equal"/>
       <compilerarg if="cc.g++"          value="-mtune=generic"/>
