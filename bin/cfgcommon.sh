@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#  Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+#  Copyright (c) 2000, 2023, Oracle and/or its affiliates.
 #
 #  Licensed under the Universal Permissive License v 1.0 as shown at
 #  https://oss.oracle.com/licenses/upl.
@@ -13,9 +13,9 @@
 #
 # This script is responsible for the following environment variables:
 #
-#     DEV_ROOT     e.g. /home/jhowes/dev/main.cpp
-#     ANT_HOME     e.g. /home/jhowes/dev/main.cpp/tools/common/ant
-#     CC_HOME      e.g. /usr
+#     DEV_ROOT     e.g. /home/user/dev/main.cpp
+#     ANT_HOME     e.g. /home/user/dev/main.cpp/tools/common/ant
+#     CC_HOME      e.g.
 #     CLASSPATH    e.g.
 #     PATH         e.g. $ANT_HOME/bin:$JAVA_HOME/bin:$CC_HOME/bin:$PATH
 #
@@ -98,8 +98,7 @@ ANT_HOME=$DEV_ROOT/tools/internal/common/ant
 #
 if [ $(uname) == "SunOS" ]; then
   CC_HOME=/opt/SunProd/studio12u1/p11/sunstudio12.1
-else
-  CC_HOME=/usr
+  # else - assume the compiler is already in the PATH on other platforms
 fi
 
 #
