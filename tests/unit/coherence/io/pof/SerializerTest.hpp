@@ -6,6 +6,10 @@
  */
 #include "coherence/lang.ns"
 
+#include "coherence/io/OctetArrayWriteBuffer.hpp"
+
+#include "coherence/io/pof/PofBufferReader.hpp"
+#include "coherence/io/pof/PofBufferWriter.hpp"
 #include "coherence/io/pof/PofReader.hpp"
 #include "coherence/io/pof/PofSerializer.hpp"
 #include "coherence/io/pof/PofWriter.hpp"
@@ -22,6 +26,10 @@ using namespace coherence::lang;
 using namespace std;
 using namespace common::test;
 
+using coherence::io::OctetArrayWriteBuffer;
+
+using coherence::io::pof::PofBufferReader;
+using coherence::io::pof::PofBufferWriter;
 using coherence::io::pof::PofReader;
 using coherence::io::pof::PofSerializer;
 using coherence::io::pof::PofWriter;
