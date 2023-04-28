@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/lang.ns"
 
@@ -46,10 +46,10 @@ COH_REGISTER_POF_SERIALIZER(3002, \
         TypedClass<SerializerTestData::Customer>::create(), \
         ModuleSerializer::CustomerSerializer::create());
 
+// add an extra blank line to avoid static macro line number conflicts
 COH_REGISTER_POF_SERIALIZER(3003, \
         TypedClass<SerializerTestData::Product>::create(), \
         ModuleSerializer::ProductSerializer::create());
-
 
 /**
 * Test suite for the SerializerTest.
@@ -96,4 +96,3 @@ class SerializerTest : public CxxTest::TestSuite
             TS_ASSERT(vP->getBalance() == vB);
             }
     };
-

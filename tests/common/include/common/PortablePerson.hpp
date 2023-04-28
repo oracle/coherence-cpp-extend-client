@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_PORTABLE_PERSON_HPP
 #define COH_PORTABLE_PERSON_HPP
@@ -144,7 +144,6 @@ class PortablePerson
         MemberView<PortablePerson> m_vSpouse;
         MemberView<ObjectArray>    m_vaChildren;
     };
-
 COH_REGISTER_PORTABLE_CLASS(1034, PortablePerson);
 
 COH_CLOSE_NAMESPACE2
