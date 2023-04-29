@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_TEST_TEST_FILTER_HPP
 #define COH_TEST_TEST_FILTER_HPP
@@ -16,9 +16,9 @@
 
 COH_OPEN_NAMESPACE2(common, test)
 
-using coherence::util::Filter;
 using coherence::io::pof::annotation::Portable;
 using coherence::io::pof::annotation::PortableProperty;
+using coherence::util::Filter;
 
 /**
  * Simple filter for validation of custom Filters with view-scheme configurations.
@@ -26,7 +26,7 @@ using coherence::io::pof::annotation::PortableProperty;
  *
  * @author rl 2019.05.14
  * @since 12.2.1.4
- */ 
+ */
 class TestFilter
     : public class_spec<TestFilter,
         extends<Object>,
@@ -72,7 +72,7 @@ class TestFilter
             {
             return m_cCount;
             }
-        
+
         void setCount(int32_t cCount)
             {
             m_cCount = cCount;
@@ -102,7 +102,6 @@ class TestFilter
         MemberView<String> f_vsAttr;
         int32_t m_cCount;
     };
-
 COH_REGISTER_CLASS(TypedClass<TestFilter>::create()->annotate(Portable::create())
         ->declare(COH_CONSTRUCTOR2(TestFilter, String::View, BoxHandle<const Integer32>))
         ->declare(COH_PROPERTY    (TestFilter, Attr, String::View))
