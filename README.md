@@ -29,13 +29,13 @@
 
 [Coherence](http://coherence.community/) is a scalable, fault-tolerant, cloud-ready,
 distributed platform for building grid-based applications and reliably storing data.
-The product is used at scale, for both compute and raw storage, in a vast array of 
+The product is used at scale, for both compute and raw storage, in a vast array of
 industries such as critical financial trading systems, high performance telecommunication
-products and eCommerce applications. 
+products and eCommerce applications.
 
-Typically these deployments do not tolerate any downtime and Coherence is chosen due to its 
+Typically these deployments do not tolerate any downtime and Coherence is chosen due to its
 novel features in death detection, application data evolvability, and the robust,
-battle-hardened core of the product that enables it to be seamlessly deployed and 
+battle-hardened core of the product that enables it to be seamlessly deployed and
 adapted within any ecosystem.
 
 At a high level, Coherence provides an implementation of the familiar `Map`
@@ -43,11 +43,11 @@ interface but rather than storing the associated data in the local process it is
 (or sharded) across a number of designated remote nodes. This partitioning enables
 applications to not only distribute (and therefore scale) their storage across multiple
 processes, machines, racks, and data centers but also to perform grid-based processing
-to truly harness the CPU resources of the machines. 
+to truly harness the CPU resources of the machines.
 
 The Coherence interface `NamedCache` (an extension of `Map`) provides methods
 to query, aggregate (map/reduce style) and compute (send functions to storage nodes
-for locally executed mutations) the data set. These capabilities, in addition to 
+for locally executed mutations) the data set. These capabilities, in addition to
 numerous other features, enable Coherence to be used as a framework for writing robust,
 distributed applications.
 
@@ -118,7 +118,7 @@ retrieved to illustrate the permanence of the data.
 
 1. The Coherence for C++ shared library see [Building](#build)
 1. [Coherence Community Edition](https://github.com/oracle/coherence) coherence.jar
-  
+
 ## Build Sanka
 
 Sanka is a command line tool which can be used to run the `main` method on Coherence C++ classes
@@ -349,3 +349,4 @@ Interested in contributing?  See our contribution [guidelines](CONTRIBUTING.md) 
 # Security
 
 Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
