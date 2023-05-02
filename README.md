@@ -9,7 +9,7 @@
 -----
 <img src=https://oracle.github.io/coherence/assets/images/logo-red.png><img>
 
-![CI Build](https://github.com/oracle/coherence-cpp-extend-client/workflows/CI%20Build/badge.svg?branch=main)
+[![CI Build](https://github.com/oracle/coherence-cpp-extend-client/workflows/CI%20Build/badge.svg?branch=main)](https://github.com/oracle/coherence-cpp-extend-client/actions?query=workflow%3A%22CI+Build%22+branch%3Amain)
 [![License](http://img.shields.io/badge/license-UPL%201.0-blue.svg)](https://oss.oracle.com/licenses/upl/)
 
 # Oracle Coherence for C++ Community Edition
