@@ -78,6 +78,7 @@ class TestPerson
     MemberView<String> m_vsName;
     int32_t m_nAge;
     };
+// COH-27665 - add an extra line to avoid static init line number collision with NestedType getList()
 COH_REGISTER_CLASS(TypedClass<TestPerson>::create()
         ->annotate(Human::create())
         ->declare(COH_CONSTRUCTOR2(TestPerson, String::View, BoxHandle<const Integer32>)));
