@@ -135,7 +135,7 @@ fi
 #
 # Add CC_HOME to PATH
 #
-if [ -n $CC_HOME ]; then
+if [ -n "$CC_HOME" ]; then
   PATH=$CC_HOME/bin:$PATH
 fi
 
