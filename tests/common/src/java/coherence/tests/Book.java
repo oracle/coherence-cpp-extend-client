@@ -14,6 +14,7 @@ import com.tangosol.io.pof.PofWriter;
 import com.tangosol.io.pof.PortableObject;
 
 import com.tangosol.util.Base;
+
 public class Book
         extends Base
         implements PortableObject, Serializable
