@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 package coherence.tests;
 
@@ -30,10 +30,10 @@ public class ItemKey
         this.m_parentId  = parentId;
         }
 
-	public Object getAssociatedKey()
-		{
-		return new Integer(m_parentId);
-		}
+    public Object getAssociatedKey()
+        {
+        return Integer.valueOf(m_parentId);
+        }
 
     // ----- PortableObject interface ---------------------------------------
 
@@ -63,8 +63,8 @@ public class ItemKey
         {
         this.m_id = id;
         }
-		
-	public int getParentId()
+
+    public int getParentId()
         {
         return m_parentId;
         }
@@ -76,7 +76,7 @@ public class ItemKey
 
     // ----- data members ---------------------------------------------------
 
-	private int m_id;
+    private int m_id;
 
-	private int m_parentId;
+    private int m_parentId;
     }
