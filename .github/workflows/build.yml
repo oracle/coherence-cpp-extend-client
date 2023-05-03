@@ -60,8 +60,9 @@ jobs:
         distribution: 'oracle'
         java-version: '8'
 
-    - name: Print Java version
-      run: java -version
+    - name: Print build environment info
+      run: |
+        . ./bin/cfglocal.sh
 
     # Build
     - name: Build
