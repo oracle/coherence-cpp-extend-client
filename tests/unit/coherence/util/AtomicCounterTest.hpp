@@ -21,203 +21,154 @@ using coherence::util::AtomicCounter;
 class AtomicCounterTest : public CxxTest::TestSuite
     {
     /**
+    * Abstract runner class that provides the framework for the incrementor and decrementor classes.
+    */
+    class AbstractAtomicCounterRunner
+        : public abstract_spec<AbstractAtomicCounterRunner,
+            extends<Object>,
+            implements<Runnable> >
+        {
+        protected:
+            AbstractAtomicCounterRunner(AtomicCounter::Handle hCounter)
+                : COH_NO_WARN(f_hcAtomic(self(), hCounter)),
+                  f_vMonitor(self(), Object::create())
+                {
+                }
+
+        public:
+            virtual void run()
+                {
+                COH_SYNCHRONIZED(f_hcAtomic)
+                    {
+                    // notify the test thread that this runner has started
+                    COH_SYNCHRONIZED(f_vMonitor)
+                        {
+                        f_vMonitor->notify();
+                        }
+
+                    // wait to be notified that all runners have started
+                    f_hcAtomic->wait();
+                    }
+
+                // perform the operations on the AtomicCounter
+                changeAtomicCounter();
+                }
+
+            virtual Object::View getMonitor() const
+                {
+                return f_vMonitor;
+                }
+
+        protected:
+            virtual void changeAtomicCounter() = 0;
+
+        protected:
+            FinalHandle<AtomicCounter> f_hcAtomic;
+            FinalView<Object>          f_vMonitor;
+        };
+
+    /**
     * Incrementor class that will increment by 1 an AtomicCount 1000 times
     * using the postIncrement method.
     */
     class AtomicIncrementor_1
         : public class_spec<AtomicIncrementor_1,
-            extends<Object>,
-            implements<Runnable> >
+            extends<AbstractAtomicCounterRunner> >
         {
         friend class factory<AtomicIncrementor_1>;
 
         protected:
-            AtomicIncrementor_1(AtomicCounter::Handle hc)
-                : COH_NO_WARN(m_hcAtomic(self(), hc)),
-                  f_vMonitor(self(), Object::create())
+            AtomicIncrementor_1(AtomicCounter::Handle hCounter)
+                : super(hCounter)
                 {
-                }
-
-        public:
-            virtual void run()
-                {
-                AtomicCounter::Handle hWord = m_hcAtomic;
-
-                COH_SYNCHRONIZED(hWord)
-                    {
-                    // notify the test thread that this incrementor thread has started
-                    COH_SYNCHRONIZED(f_vMonitor)
-                        {
-                        f_vMonitor->notify();
-                        }
-
-                    hWord->wait();
-                    }
-
-                for (int32_t x = 0; x < 1000; ++x)
-                    {
-                    m_hcAtomic->postIncrement();
-                    }
-                }
-            
-            virtual Object::View getMonitor() const
-                {
-                return f_vMonitor;
                 }
 
         protected:
-            MemberHandle<AtomicCounter> m_hcAtomic;
-            FinalView<Object>           f_vMonitor;
+            virtual void changeAtomicCounter()
+                {
+                for (int32_t x = 0; x < 1000; ++x)
+                    {
+                    f_hcAtomic->postIncrement();
+                    }
+                }
         };
 
-        /**
-        * Incrementor class that will increment by 5 an AtomicCount 1000 times
-        * using the postIncrement method.
-        */
-        class AtomicIncrementor_5
-            : public class_spec<AtomicIncrementor_5,
-                extends<Object>,
-                implements<Runnable> >
+    /**
+    * Incrementor class that will increment by 5 an AtomicCount 1000 times
+    * using the postIncrement method.
+    */
+    class AtomicIncrementor_5
+        : public class_spec<AtomicIncrementor_5,
+            extends<AbstractAtomicCounterRunner> >
         {
         friend class factory<AtomicIncrementor_5>;
 
         protected:
-            AtomicIncrementor_5(AtomicCounter::Handle hc)
-            : COH_NO_WARN(m_hcAtomic(self(), hc)),
-              f_vMonitor(self(), Object::create())
+            AtomicIncrementor_5(AtomicCounter::Handle hCounter)
+                : super(hCounter)
                 {
-                }
-
-        public:
-            virtual void run()
-                {
-                AtomicCounter::Handle hWord = m_hcAtomic;
-
-                COH_SYNCHRONIZED(hWord)
-                    {
-                    // notify the test thread that this incrementor thread has started
-                    COH_SYNCHRONIZED(f_vMonitor)
-                        {
-                        f_vMonitor->notify();
-                        }
-
-                    hWord->wait();
-                    }
-
-                for (int32_t x = 0; x < 1000; ++x)
-                    {
-                    m_hcAtomic->postIncrement(5);
-                    }
-                }
-            
-            virtual Object::View getMonitor() const
-                {
-                return f_vMonitor;
                 }
 
         protected:
-            MemberHandle<AtomicCounter> m_hcAtomic;
-            FinalView<Object>           f_vMonitor;
+            virtual void changeAtomicCounter()
+                {
+                for (int32_t x = 0; x < 1000; ++x)
+                    {
+                    f_hcAtomic->postIncrement(5);
+                    }
+                }
         };
 
-        /**
-        * Decrementor class that will decrement by 1 an AtomicCount 1000 times
-        * using the postDecrement method.
-        */
-        class AtomicDecrementor_1
-            : public class_spec<AtomicDecrementor_1,
-                extends<Object>,
-                implements<Runnable> >
+    /**
+    * Decrementor class that will decrement by 1 an AtomicCount 1000 times
+    * using the postDecrement method.
+    */
+    class AtomicDecrementor_1
+        : public class_spec<AtomicDecrementor_1,
+            extends<AbstractAtomicCounterRunner> >
         {
         friend class factory<AtomicDecrementor_1>;
 
         protected:
-            AtomicDecrementor_1(AtomicCounter::Handle hc)
-                : COH_NO_WARN(m_hcAtomic(self(), hc)),
-                  f_vMonitor(self(), Object::create())
+            AtomicDecrementor_1(AtomicCounter::Handle hCounter)
+                : super(hCounter)
                 {
-                }
-
-        public:
-            virtual void run()
-                {
-                AtomicCounter::Handle hWord = m_hcAtomic;
-
-                COH_SYNCHRONIZED(hWord)
-                    {
-                    // notify the test thread that this decrementor thread has started
-                    COH_SYNCHRONIZED(f_vMonitor)
-                        {
-                        f_vMonitor->notify();
-                        }
-
-                    hWord->wait();
-                    }
-
-                for (int32_t x = 0; x < 1000; ++x)
-                    {
-                    m_hcAtomic->postDecrement();
-                    }
-                }
-
-            virtual Object::View getMonitor() const
-                {
-                return f_vMonitor;
                 }
 
         protected:
-            MemberHandle<AtomicCounter> m_hcAtomic;
-            FinalView<Object>           f_vMonitor;
+            virtual void changeAtomicCounter()
+                {
+                for (int32_t x = 0; x < 1000; ++x)
+                    {
+                    f_hcAtomic->postDecrement();
+                    }
+                }
         };
 
-        /**
-        * Decrementor class that will decrement by 5 an AtomicCount 1000 times
-        * using the postDecrement method.
-        */
-        class AtomicDecrementor_5
-            : public class_spec<AtomicDecrementor_5,
-                extends<Object>,
-                implements<Runnable> >
+    /**
+    * Decrementor class that will decrement by 5 an AtomicCount 1000 times
+    * using the postDecrement method.
+    */
+    class AtomicDecrementor_5
+        : public class_spec<AtomicDecrementor_5,
+            extends<AbstractAtomicCounterRunner> >
         {
         friend class factory<AtomicDecrementor_5>;
 
         protected:
-            AtomicDecrementor_5(AtomicCounter::Handle hc)
-            : COH_NO_WARN(m_hcAtomic(self(), hc)),
-              f_vMonitor(self(), Object::create())
+            AtomicDecrementor_5(AtomicCounter::Handle hCounter)
+                : super(hCounter)
                 {
-                }
-
-        public:
-            virtual void run()
-                {
-                AtomicCounter::Handle hWord = m_hcAtomic;
-
-                COH_SYNCHRONIZED(hWord)
-                    {
-                    // notify the test thread that this decrementor thread has started
-                    COH_SYNCHRONIZED(f_vMonitor)
-                        {
-                        f_vMonitor->notify();
-                        }
-
-                    hWord->wait();
-                    }
-
-                for (int32_t x = 0; x < 1000; ++x)
-                    {
-                    m_hcAtomic->postDecrement(5);
-                    }
-                }
-
-            virtual Object::View getMonitor() const
-                {
-                return f_vMonitor;
                 }
 
         protected:
-            MemberHandle<AtomicCounter> m_hcAtomic;
-            FinalView<Object>           f_vMonitor;
+            virtual void changeAtomicCounter()
+                {
+                for (int32_t x = 0; x < 1000; ++x)
+                    {
+                    f_hcAtomic->postDecrement(5);
+                    }
+                }
         };
 
     public:
@@ -232,23 +183,19 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             for (int32_t x = 0; x < 10; ++x)
                 {
-                Object::View vMonitor;
+                AbstractAtomicCounterRunner::Handle hIncrementor;
 
                 if (x < 5)
                     {
-                    AtomicIncrementor_1::Handle hIncrementor = AtomicIncrementor_1::create(hcAtomic);
-
-                    vMonitor     = hIncrementor->getMonitor();
-                    ahThreads[x] = Thread::create(hIncrementor);
+                    hIncrementor = AtomicIncrementor_1::create(hcAtomic);
                     }
                 else
                     {
-                    AtomicIncrementor_5::Handle hIncrementor = AtomicIncrementor_5::create(hcAtomic);
-
-                    vMonitor     = hIncrementor->getMonitor();
-                    ahThreads[x] = Thread::create(hIncrementor);
+                    hIncrementor = AtomicIncrementor_5::create(hcAtomic);
                     }
+                ahThreads[x] = Thread::create(hIncrementor);
 
+                Object::View vMonitor = hIncrementor->getMonitor();
                 COH_SYNCHRONIZED(vMonitor)
                     {
                     ahThreads[x]->start();
@@ -259,7 +206,7 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                // all incrementor threads must be in hcAtomic->wait() by this point
+                // all incrementor threads are now in hcAtomic->wait()
                 hcAtomic->notifyAll();
                 }
 
@@ -282,23 +229,19 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             for (int32_t x = 0; x < 10; ++x)
                 {
-                Object::View vMonitor;
+                AbstractAtomicCounterRunner::Handle hDecrementor;
 
                 if (x < 5)
                     {
-                    AtomicDecrementor_1::Handle hDecrementor = AtomicDecrementor_1::create(hcAtomic);
-
-                    vMonitor     = hDecrementor->getMonitor();
-                    ahThreads[x] = Thread::create(hDecrementor);
+                    hDecrementor = AtomicDecrementor_1::create(hcAtomic);
                     }
                 else
                     {
-                    AtomicDecrementor_5::Handle hDecrementor = AtomicDecrementor_5::create(hcAtomic);
-
-                    vMonitor     = hDecrementor->getMonitor();
-                    ahThreads[x] = Thread::create(hDecrementor);
+                    hDecrementor = AtomicDecrementor_5::create(hcAtomic);
                     }
+                ahThreads[x] = Thread::create(hDecrementor);
 
+                Object::View vMonitor = hDecrementor->getMonitor();
                 COH_SYNCHRONIZED(vMonitor)
                     {
                     ahThreads[x]->start();
@@ -309,7 +252,7 @@ class AtomicCounterTest : public CxxTest::TestSuite
 
             COH_SYNCHRONIZED(hcAtomic)
                 {
-                // all decrementor threads must be in hcAtomic->wait() by this point
+                // all decrementor threads are now in hcAtomic->wait()
                 hcAtomic->notifyAll();
                 }
 
