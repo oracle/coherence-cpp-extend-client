@@ -54,6 +54,15 @@ jobs:
         wget --tries=3 https://sourceforge.net/projects/cxxtest/files/cxxtest/3.10.1/cxxtest-3.10.1.zip/download -O $TMP_DIR/cxxtest.zip
         unzip $TMP_DIR/cxxtest.zip -d tools/internal/common
 
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '8'
+
+    - name: Print Java version
+      run: java -version
+
     # Build
     - name: Build
       run: |
