@@ -1,8 +1,8 @@
-/*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+./include/private/coherence/component/net/extend/PofChannel.hpp/*
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_POF_CHANNEL_HPP
 #define COH_POF_CHANNEL_HPP
