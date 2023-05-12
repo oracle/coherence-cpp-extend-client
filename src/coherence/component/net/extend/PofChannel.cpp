@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/net/extend/PofChannel.hpp"
 
@@ -18,10 +18,10 @@
 
 #include "coherence/net/messaging/ConnectionException.hpp"
 
-#include "coherence/util/HashMap.hpp"
 #include "coherence/util/Iterator.hpp"
 #include "coherence/util/LongArrayIterator.hpp"
 #include "coherence/util/SafeHashMap.hpp"
+#include "coherence/util/SparseArray.hpp"
 
 #include "private/coherence/component/net/extend/AbstractPofRequest.hpp"
 #include "private/coherence/component/net/extend/PofConnection.hpp"
@@ -33,8 +33,6 @@
 #include "private/coherence/net/messaging/Response.hpp"
 
 #include "private/coherence/security/SecurityHelper.hpp"
-
-#include "private/coherence/util/HashArray.hpp"
 
 #include "private/coherence/util/logging/Logger.hpp"
 
@@ -54,11 +52,11 @@ using coherence::net::messaging::ConnectionException;
 using coherence::net::messaging::Response;
 using coherence::net::PriorityTask;
 using coherence::security::SecurityHelper;
-using coherence::util::HashArray;
 using coherence::util::HashMap;
 using coherence::util::Iterator;
 using coherence::util::LongArrayIterator;
 using coherence::util::SafeHashMap;
+using coherence::util::SparseArray;
 
 
 // ----- constructors -------------------------------------------------------
@@ -73,7 +71,7 @@ PofChannel::PofChannel()
       f_vMessageFactory(self()),
       m_fOpen(self(), false),
       m_hReceiver(self()),
-      f_hlaRequest(self(), HashArray::create()),
+      f_hlaRequest(self(), SparseArray::create()),
       f_hGateRequest(self(), ThreadGate::create()),
       f_vSerializer(self()),
       f_vSubject(self()),
@@ -119,7 +117,7 @@ bool PofChannel::closeInternal(bool fNotify, Exception::Holder ohe,
 
     // cancel all pending requests, keeping the gate closed to prevent new
     // requests from being registered
-    HashArray::Handle hlaRequest     = f_hlaRequest;
+    LongArray::Handle hlaRequest     = f_hlaRequest;
     Receiver::Handle  hReceiver      = getReceiver();
     bool              fCloseReceiver = false;
 
@@ -294,6 +292,14 @@ bool PofChannel::gateClose(int64_t cMillis)
 void PofChannel::gateOpen()
     {
     f_hThreadGate->open();
+    }
+
+int64_t PofChannel::generateRequestId()
+    {
+    int64_t nId = getRequestId();
+    setRequestId(nId + 1);
+
+    return nId;
     }
 
 void PofChannel::gateEnter()
@@ -887,9 +893,13 @@ Object::Holder PofChannel::request(Request::Handle hRequest, int64_t cMillis)
 
 Request::Handle PofChannel::getRequest(int64_t lId)
     {
-    Request::Status::Handle hStatus = cast<Request::Status::Handle>(
-            f_hlaRequest->get(lId));
-    return NULL == hStatus ? Request::Handle(NULL) : hStatus->getRequest();
+    LongArray::View vlaRequest = f_hlaRequest;
+    COH_SYNCHRONIZED (vlaRequest) // see #closeInternal
+        {
+        Request::Status::Handle hStatus = cast<Request::Status::Handle>(
+                vlaRequest->get(lId));
+        return NULL == hStatus ? Request::Handle(NULL) : hStatus->getRequest();
+        }
     }
 
 Channel::Receiver::Handle PofChannel::getReceiver()
@@ -1033,6 +1043,11 @@ void PofChannel::execute(Message::Handle hMessage)
         }
     }
 
+int64_t PofChannel::getRequestId()
+    {
+    return m_nRequestId;
+    }
+
 void PofChannel::post(Message::Handle hMessage)
     {
     struct PostFinally
@@ -1101,10 +1116,26 @@ Request::Status::Handle PofChannel::registerRequest(Request::Handle hRequest)
 
     hRequest->setStatus(hStatus);
 
+    LongArray::Handle hlaRequest = f_hlaRequest;
+
     COH_GATE_ENTER (f_hGateRequest, ThreadGate::infinite) // see #closeInternal
         {
+        COH_SYNCHRONIZED(hlaRequest)
+        {
         assertOpen();
-        hRequest->setId(f_hlaRequest->add(hStatus));
+        
+        // generate a unique request ID
+        int64_t lId = generateRequestId();
+        hRequest->setId(lId);
+
+        Object::Holder hoStatus = hlaRequest->set(lId, hStatus);
+        if (NULL != hoStatus)
+            {
+            hlaRequest->set(lId, hoStatus);
+            COH_THROW_STREAM(IllegalStateException, "duplicate request: "
+                    << hRequest);
+            }
+        }
         }
 
     return hStatus;
@@ -1113,7 +1144,12 @@ Request::Status::Handle PofChannel::registerRequest(Request::Handle hRequest)
 void PofChannel::unregisterRequest(Request::Status::View vStatus)
     {
     COH_ENSURE(NULL != vStatus);
-    f_hlaRequest->remove(vStatus->getRequest()->getId());
+
+    LongArray::Handle hlaRequest = f_hlaRequest;
+    COH_SYNCHRONIZED(hlaRequest)
+	{
+        hlaRequest->remove(vStatus->getRequest()->getId());
+        }
     }
 
 
@@ -1236,6 +1272,11 @@ void PofChannel::setReceiver(Receiver::Handle hReceiver)
     COH_ENSURE(!isOpen() || hReceiver == NULL);
 
     m_hReceiver = hReceiver;
+    }
+
+void PofChannel::setRequestId(int64_t nId)
+    {
+    m_nRequestId = nId;
     }
 
 void PofChannel::setSerializer(Serializer::View vSerializer)
