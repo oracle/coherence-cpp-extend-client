@@ -27,7 +27,6 @@
 #include "private/coherence/net/messaging/Message.hpp"
 #include "private/coherence/net/messaging/Protocol.hpp"
 #include "private/coherence/net/messaging/Request.hpp"
-#include "private/coherence/util/HashArray.hpp"
 
 
 
@@ -52,7 +51,6 @@ using coherence::net::messaging::Protocol;
 using coherence::net::messaging::Request;
 using coherence::security::auth::Subject;
 using coherence::util::Describable;
-using coherence::util::HashArray;
 using coherence::util::Map;
 using coherence::util::ThreadGate;
 
@@ -155,6 +153,13 @@ class COH_EXPORT PofChannel
         * Open the Channel ThreadGate.
         */
         virtual void gateOpen();
+
+        /**
+        * Generate and return a new unique Request identifier.
+        *
+        * @return the new unique Request identifier
+        */
+        virtual int64_t generateRequestId();
 
         /**
         * Enter the Connection and Channel ThreadGate (in that order).
@@ -436,6 +441,13 @@ class COH_EXPORT PofChannel
         */
         virtual void execute(Message::Handle hMessage);
 
+
+        /**
+        * @return  a new unique Request identifier for a Request sent through
+        *          this Channel
+        */
+        virtual int64_t getRequestId();
+
         /**
         * Asynchronous Message send implementation.
         *
@@ -602,6 +614,15 @@ class COH_EXPORT PofChannel
         virtual void setReceiver(Receiver::Handle hReceiver);
 
         /**
+        * Setter for property RequestId.<p>
+        * A counter used to generate unique identifiers for Requests sent
+        * through this Channel.
+        * 
+        * @param nId  the request id
+        */
+        virtual void setRequestId(int64_t nId);
+
+        /**
         * Configure the Channel's Serializer.
         *
         * @param vSerializer  the Serializer
@@ -689,12 +710,18 @@ class COH_EXPORT PofChannel
         * The list of open RequestStatus objects, indexed by Request
         * identifier.
         */
-        FinalHandle<HashArray> f_hlaRequest;
+        FinalHandle<LongArray> f_hlaRequest;
 
         /**
         * ThreadGate protecting additions to m_hlaRequest
         */
         FinalHandle<ThreadGate> f_hGateRequest;
+
+        /**
+        * A counter used to generate unique identifiers for Requests sent
+        * through this Channel.
+        */
+        int64_t m_nRequestId;
 
         /**
         * The Serializer used to serialize and deserialize payload objects
