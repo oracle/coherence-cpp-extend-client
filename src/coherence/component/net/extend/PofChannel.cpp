@@ -21,7 +21,6 @@
 #include "coherence/util/Iterator.hpp"
 #include "coherence/util/LongArrayIterator.hpp"
 #include "coherence/util/SafeHashMap.hpp"
-#include "coherence/util/SparseArray.hpp"
 
 #include "private/coherence/component/net/extend/AbstractPofRequest.hpp"
 #include "private/coherence/component/net/extend/PofConnection.hpp"
@@ -33,6 +32,8 @@
 #include "private/coherence/net/messaging/Response.hpp"
 
 #include "private/coherence/security/SecurityHelper.hpp"
+
+#include "private/coherence/util/HashArray.hpp"
 
 #include "private/coherence/util/logging/Logger.hpp"
 
@@ -52,11 +53,11 @@ using coherence::net::messaging::ConnectionException;
 using coherence::net::messaging::Response;
 using coherence::net::PriorityTask;
 using coherence::security::SecurityHelper;
+using coherence::util::HashArray;
 using coherence::util::HashMap;
 using coherence::util::Iterator;
 using coherence::util::LongArrayIterator;
 using coherence::util::SafeHashMap;
-using coherence::util::SparseArray;
 
 
 // ----- constructors -------------------------------------------------------
@@ -71,7 +72,7 @@ PofChannel::PofChannel()
       f_vMessageFactory(self()),
       m_fOpen(self(), false),
       m_hReceiver(self()),
-      f_hlaRequest(self(), SparseArray::create()),
+      f_hlaRequest(self(), HashArray::create()),
       f_hGateRequest(self(), ThreadGate::create()),
       f_vSerializer(self()),
       f_vSubject(self()),
