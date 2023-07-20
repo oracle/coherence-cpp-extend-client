@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_WINDOWS_SOCKET_HPP
 #define COH_WINDOWS_SOCKET_HPP
@@ -309,9 +309,6 @@ class COH_EXPORT WindowsSocket
                 int nError = WSAGetLastError();
                 switch (nError)
                     {
-                    case WSA_IO_PENDING: // Bug 25237462 - we should not get WSA_IO_PENDING. Handle as a soft error
-                        COH_LOG("Handling unexpected socket " << (chan == channel_in ? "input" : "output") << " return of WSA_IO_PENDING as WSAEWOULDBLOCK", 9);
-                        // fall through
                     case WSAEWOULDBLOCK:
                     case WSAEINTR:
                     case WSAEINPROGRESS:
@@ -587,7 +584,9 @@ class COH_EXPORT WindowsSocket
                         : fIn ? SD_RECEIVE : SD_SEND))
                     {
                     int nError = WSAGetLastError();
-                    if (fConnectError || nError != WSAENOTCONN)
+                    if (fConnectError || 
+                        (nError != WSAENOTCONN &&
+                         nError != WSAECONNRESET))
                         {
                         COH_THROW_ERRNO(nError, "Socket shutdown failed");
                         }
