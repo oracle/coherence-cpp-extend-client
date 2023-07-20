@@ -585,8 +585,8 @@ class COH_EXPORT WindowsSocket
                     {
                     int nError = WSAGetLastError();
                     if (fConnectError || 
-                    	(nError != WSAENOTCONN &&
-                    	 nError != WSAECONNRESET))
+                        (nError != WSAENOTCONN &&
+                         nError != WSAECONNRESET))
                         {
                         COH_THROW_ERRNO(nError, "Socket shutdown failed");
                         }
