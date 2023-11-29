@@ -198,6 +198,14 @@
     <isset property="env.arch.x64"/>
   </condition>
 
+  <!-- aarch64 -->
+  <condition property="env.arch.aarch64">
+    <os arch="aarch64"/>
+  </condition>
+  <condition property="env.arch" value="aarch64">
+    <isset property="env.arch.aarch64"/>
+  </condition>
+
   <!-- sparc v9 32b -->
   <condition property="env.arch.sparc32">
     <and>

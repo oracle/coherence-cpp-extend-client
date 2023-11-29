@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <!--
-  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+  Copyright (c) 2000, 2023, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
-  http://oss.oracle.com/licenses/upl.
+  https://oss.oracle.com/licenses/upl.
 -->
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 <!-- ANT build script for the apidoc project. This project creates the API -->
@@ -44,6 +44,17 @@
       <property name="build.doxyfilter"
          value="${tools.platform.dir}/doxyfilter/bin/doxyfilter"/>
       <property name="doxygen.vmlauncher" value="true"/>
+    </else>
+  </if>
+
+  <if>
+    <isset property="env.arch.aarch64"/>
+    <then>
+      <!-- on Linux aarch64 get doxygen from the PATH -->
+      <property name="doxygen.executable" value="doxygen"/>
+    </then>
+    <else>
+      <property name="doxygen.executable" value="${tools.platform.dir}/doxygen/bin/doxygen"/>
     </else>
   </if>
 
@@ -105,27 +116,35 @@
 
     <mkdir dir="${build.doc.dir}/api"/>
 
-    <exec executable="${tools.platform.dir}/doxygen/bin/doxygen"
-          vmlauncher="${doxygen.vmlauncher}">
-      <arg value="doxygen.cfg"/>
-      <env key="DOC_OUTPUT_DIR"        value="${build.doc.dir}/api"/>
-      <env key="BUILD_DOC_INCLUDE_DIR" value="${build.doc.dir}/include/public"/>
-      <env key="BUILD_DOXYFILTER"      value="${build.doxyfilter}"/>
-      <env key="DOC_VERSION"           value="${project.version}"/>
-    </exec>
+    <if>
+      <isset property="env.arch.aarch64"/>
+      <then>
+        <echo>Generating the API documentation is not supported on Linux aarch64. Skipping...</echo>
+      </then>
+      <else>
+        <exec executable="${doxygen.executable}"
+              vmlauncher="${doxygen.vmlauncher}">
+          <arg value="doxygen.cfg"/>
+          <env key="DOC_OUTPUT_DIR"        value="${build.doc.dir}/api"/>
+          <env key="BUILD_DOC_INCLUDE_DIR" value="${build.doc.dir}/include/public"/>
+          <env key="BUILD_DOXYFILTER"      value="${build.doxyfilter}"/>
+          <env key="DOC_VERSION"           value="${project.version}"/>
+        </exec>
 
-    <antcall target="banner">
-      <param name="banner.message" value="Verifying project: ${project.name}"/>
-    </antcall>
+        <antcall target="banner">
+          <param name="banner.message" value="Verifying project: ${project.name}"/>
+        </antcall>
 
-    <java classname="com.tangosol.tools.DoxyCheck" failonerror="true">
-       <classpath>
-        <pathelement location="${doxycheck.dir}/doxycheck.jar"/>
-       </classpath>
-      <arg line="${include.dir}/public"/>
-      <arg line="${build.doc.dir}/api/html"/>
-      <arg line="${prj.dir}/apidoc/exclude.txt"/>
-    </java>
+        <java classname="com.tangosol.tools.DoxyCheck" failonerror="true">
+           <classpath>
+            <pathelement location="${doxycheck.dir}/doxycheck.jar"/>
+           </classpath>
+          <arg line="${include.dir}/public"/>
+          <arg line="${build.doc.dir}/api/html"/>
+          <arg line="${prj.dir}/apidoc/exclude.txt"/>
+        </java>
+      </else>
+    </if>
   </target>
 
   <target name="build.private" description="Generate private API documentation." depends="prepare-includes">
@@ -135,7 +154,7 @@
 
     <mkdir dir="${build.doc.dir}/api_private"/>
 
-    <exec executable="${tools.platform.dir}/doxygen/bin/doxygen"
+    <exec executable="${doxygen.executable}"
           vmlauncher="${doxygen.vmlauncher}">
       <arg value="doxygen_private.cfg"/>
       <env key="DOC_OUTPUT_DIR"        value="${build.doc.dir}/api_private"/>
@@ -166,14 +185,22 @@
              value="Creating distribution for project: ${project.name}"/>
     </antcall>
 
-    <copy preservelastmodified="true" todir="${dist.doc.dir}/api">
-      <fileset dir="${build.doc.dir}/api/html"/>
-    </copy>
+    <if>
+      <isset property="env.arch.aarch64"/>
+      <then>
+        <echo>Generating the API documentation is not supported on Linux aarch64. Skipping...</echo>
+      </then>
+      <else>
+        <copy preservelastmodified="true" todir="${dist.doc.dir}/api">
+          <fileset dir="${build.doc.dir}/api/html"/>
+        </copy>
 
-    <copy preservelastmodified="true" todir="${dist.doc.dir}">
-      <fileset dir=".">
-        <include name="api.html"/>
-      </fileset>
-    </copy>
+        <copy preservelastmodified="true" todir="${dist.doc.dir}">
+          <fileset dir=".">
+            <include name="api.html"/>
+          </fileset>
+        </copy>
+      </else>
+    </if>
   </target>
 </project>
