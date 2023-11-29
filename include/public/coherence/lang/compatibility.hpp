@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_COMPATIBILITY_HPP
 #define COH_COMPATIBILITY_HPP
@@ -58,6 +58,9 @@
 #   elif defined(__x86_32__) || defined(__i386__)
 #       define COH_OS_LINUX32
 #       define COH_PLATFORM Linux x86
+#   elif defined (__aarch64__)
+#       define COH_OS_LINUXAARCH64
+#       define COH_PLATFORM Linux aarch64
 #   endif
 #elif defined(__APPLE__)
 #   define COH_OS_DARWIN // OS X
