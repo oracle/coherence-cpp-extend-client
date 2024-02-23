@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * https://oss.oracle.com/licenses/upl.
@@ -82,11 +82,7 @@
 
 #if defined(_MSC_VER) && _MSC_VER >= 1600
 #   define COH_CC_MSVC // Microsoft Visual C/C++
-#   if _MSC_VER == 1900
-#       define COH_CC MSVC 2015 // differentiate VS 2015 build
-#   else
-#       define COH_CC MSVC
-#   endif
+#   define COH_CC MSVC
 #elif defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x590
 #   define COH_CC_SUN // Oracle Solaris Studio
 #   if defined (STLPORT)
