@@ -159,12 +159,8 @@ echo Build tools:
 $JAVA_HOME/bin/java -version
 case $(uname) in
   "Darwin")
-    if [ -z "$CC_HOME" ]; then
-      xcodebuild -version
-      g++ --version
-    else
-      g++ --version
-    fi
+    xcodebuild -version
+    g++ --version
     ;;
   "Linux")
     g++ --version
