@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_CACHE_EVENT_HPP
 #define COH_CACHE_EVENT_HPP
@@ -31,6 +31,13 @@ using coherence::util::ObservableMap;
 * naturally causes either entry_inserted or entry_updated event. However, the
 * same event could be as well caused by a client call to a get() method that
 * in turn forces an entry insertion by a cache loader.
+*
+* Not all cache service types support the dispatching of synthetic events.
+* Synthetic events will only be dispatched by a partitioned cache service
+* and its derivatives, such as a federated cache service, or by near, view,
+* or remote caches that are backed by a cache service that supports the
+* dispatching of synthetic events. In all other cases, no event will be dispatched
+* for synthetic events such as expiry.
 *
 * @author js  2008.06.06
 */
@@ -125,7 +132,7 @@ class COH_EXPORT CacheEvent
         */
         CacheEvent(ObservableMap::Handle hMap, int32_t nId,
                 Object::View voKey, Object::View voValueOld,
-                Object::View voValueNew, bool fSynthetic, 
+                Object::View voValueNew, bool fSynthetic,
                 TransformationState nTransformState);
 
         /**
@@ -181,7 +188,6 @@ class COH_EXPORT CacheEvent
         */
         CacheEvent(const CacheEvent&);
 
-		
     // ----- CacheEvent interface -------------------------------------------
 
     public:
@@ -264,4 +270,3 @@ class COH_EXPORT CacheEvent
 COH_CLOSE_NAMESPACE3
 
 #endif // COH_CACHE_EVENT_HPP
-
