@@ -70,6 +70,9 @@
 #   if defined(__x86_64__) || defined(__amd64__)
 #       define COH_OS_DARWIN64
 #       define COH_PLATFORM Apple macOS x64
+#   elif defined (__aarch64__)
+#       define COH_OS_DARWINAARCH64
+#       define COH_PLATFORM Apple macOS arm64
 #   endif
 #endif
 
