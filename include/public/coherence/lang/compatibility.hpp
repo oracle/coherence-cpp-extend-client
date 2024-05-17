@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * https://oss.oracle.com/licenses/upl.
@@ -70,6 +70,9 @@
 #   if defined(__x86_64__) || defined(__amd64__)
 #       define COH_OS_DARWIN64
 #       define COH_PLATFORM Apple macOS x64
+#   elif defined (__aarch64__)
+#       define COH_OS_DARWINAARCH64
+#       define COH_PLATFORM Apple macOS arm64
 #   endif
 #endif
 
