@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 
@@ -186,10 +186,6 @@ class SocketTest : public CxxTest::TestSuite
                 TS_ASSERT(cMillisBlocked >= 5 && cMillisBlocked < 1000); // Note: Windows blocking sockets have minimum blocking time of 500ms!
                 // expected timeout exception caught
                 TS_ASSERT(e->getBytesTransfered() == 0);
-
-                // cleanup server and workers
-                hThreadServer->interrupt();
-                hThreadServer->join();
                 }
             // any other exception will fail test
 
@@ -209,13 +205,23 @@ class SocketTest : public CxxTest::TestSuite
                     TS_ASSERT(cMillisBlocked >= 900 && cMillisBlocked < 2000); // see note regarding Windows above
                     // expected timeout exception caught
                     TS_ASSERT(e->getBytesTransfered() == 0);
-
-                    // cleanup server and workers
-                    hThreadServer->interrupt();
-                    hThreadServer->join();
                     }
                 // any other exception will fail test
                 }
 
+            // cleanup server and workers
+            hThreadServer->interrupt();
+            hThreadServer->join();
+
+            // now that the socket is closed, read should throw an exception
+            try
+                {
+                hInput->read();
+                TS_ASSERT(false); // should not reach here
+                }
+            catch (IOException::View e)
+                {
+                }
+            // any other exception will fail the test
             }
     };
