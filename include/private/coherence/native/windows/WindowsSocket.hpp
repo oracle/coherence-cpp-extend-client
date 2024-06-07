@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * https://oss.oracle.com/licenses/upl.
@@ -289,6 +289,13 @@ class COH_EXPORT WindowsSocket
                     }
 
                 nResult = ::recv(nSocket, (char*) ab, (int) cb, 0);
+
+                if (nResult == 0) // disconnect
+                    {
+                    // bug 36695247 - blocking recv returned 0;
+                    // this indicates that the socket has been closed by the remote end
+                    return npos;
+                    }
                 }
             else
                 {
@@ -584,7 +591,7 @@ class COH_EXPORT WindowsSocket
                         : fIn ? SD_RECEIVE : SD_SEND))
                     {
                     int nError = WSAGetLastError();
-                    if (fConnectError || 
+                    if (fConnectError ||
                         (nError != WSAENOTCONN &&
                          nError != WSAECONNRESET))
                         {

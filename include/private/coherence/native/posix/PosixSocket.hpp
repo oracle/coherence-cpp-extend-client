@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_POSIX_SOCKET_HPP
 #define COH_POSIX_SOCKET_HPP
@@ -34,18 +34,15 @@
 // Solaris doesn't automatically include filio.h from ioctl and this file
 // doesn't exists on Linux. But it is there on OS X. FIONREAD is the constant
 // that we need, check if it has been defined or not.
-#ifndef  FIONREAD
+#ifndef FIONREAD
 #include <sys/filio.h>
 #endif
-
-
 
 COH_OPEN_NAMESPACE3(coherence,native,posix)
 
 using coherence::io::EOFException;
 using coherence::io::IOException;
 using coherence::native::NativeSocket;
-
 
 /**
 * Throw an IOException based on a standard socket error.
@@ -332,13 +329,14 @@ class COH_EXPORT PosixSocket
                     {
                     // prior recv was optimistic non-blocking, try again after select
                     nResult = ::recv(nSocket, ab, cb, m_nRxFlags);
-                    if (nResult == 0) // disconnect
-                        {
-                        // select indicated that there was data, but recv
-                        // returned nothing, this indicates that the socket
-                        // has been closed by the remote end
-                        return npos;
-                        }
+                    }
+
+                if (nResult == 0) // disconnect
+                    {
+                    // select indicated that there was data, but non-blocking recv returned nothing,
+                    // or, bug 36695247 - blocking recv returned 0;
+                    // this indicates that the socket has been closed by the remote end
+                    return npos;
                     }
                 }
             else
