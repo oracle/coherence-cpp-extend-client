@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/util/SafeNamedCache.hpp"
 
@@ -561,7 +561,6 @@ NamedCache::Handle SafeNamedCache::getRunningNamedCache() const
                     }
                 }
             }
-        hSafeService->drainEvents();
         }
     return hCache;
     }
@@ -586,7 +585,7 @@ NamedCache::Handle SafeNamedCache::restartNamedCache() const
 NamedCache::Handle SafeNamedCache::restartNamedCache()
     {
     NamedCache::Handle hCache =
-            m_hCacheService->ensureRunningCacheService(false)->
+            m_hCacheService->ensureRunningCacheService()->
             ensureCache(f_vsCacheName);
 
     ObjectArray::View        vaFilter;

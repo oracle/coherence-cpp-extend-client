@@ -120,7 +120,7 @@ class AuthorizedServiceTest : public CxxTest::TestSuite
                     cast<SafeInvocationService::Handle>(hService);
             RemoteInvocationService::Handle hRemoteService =
                     cast<RemoteInvocationService::Handle>
-                        (hSafeService->ensureRunningInvocationService(true));
+                        (hSafeService->ensureRunningInvocationService());
             ConnectionInitiator::Handle hInitiator = hRemoteService->getInitiator();
             Connection::Handle hConnection = hInitiator->ensureConnection();
             TS_ASSERT(vSubj->equals(hConnection->getChannel(0)->getSubject()));

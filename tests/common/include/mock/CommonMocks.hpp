@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_COMMONMOCKS_HPP
 #define COH_COMMONMOCKS_HPP
@@ -2149,17 +2149,17 @@ class MockSafeCacheService
         /**
         * Return the MockCacheService associated with this Mock
         */
-        virtual CacheService::Handle ensureRunningCacheService(bool /*fDrain*/)
+        virtual CacheService::Handle ensureRunningCacheService()
             {
             return m_mockCacheService;
             }
 
-        virtual CacheService::View ensureRunningCacheService(bool /*fDrain*/) const
+        virtual CacheService::View ensureRunningCacheService() const
             {
             return m_mockCacheService;
             }
 
-        virtual CacheService::Handle ensureRunningCacheServiceInternal(bool /*fDrain*/) const
+        virtual CacheService::Handle ensureRunningCacheServiceInternal() const
             {
             return m_mockCacheService;
             }
@@ -2175,12 +2175,6 @@ class MockSafeCacheService
             setExpectation(invocation("void destroyCache(NamedCache::Handle hNamedCache)")->
                     withObjectArgument(hNamedCache));
             }
-
-        virtual void drainEvents() const
-            {
-            setExpectation(invocation("void drainEvents() const"));
-            }
-
 
     // ----- accessor -------------------------------------------------------
     public:

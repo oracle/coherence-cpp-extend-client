@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_COMPONENT_SERVICE_HPP
 #define COH_COMPONENT_SERVICE_HPP
@@ -425,7 +425,7 @@ class COH_EXPORT Service
         * Blocked copy constructor.
         */
         Service(const Service&);
-		
+
 
     // ----- Service interface ----------------------------------------------
 
@@ -464,13 +464,6 @@ class COH_EXPORT Service
         * @param nEvent  the ID of the ServiceEvent
         */
         virtual void dispatchServiceEvent(ServiceEvent::Id nEvent);
-
-        /**
-        * Block the calling thread until the EventDispatcher Queue is empty
-        * and all outstanding tasks have been executed. This method is
-        * mostly called on client threads.
-        */
-        virtual void drainEvents();
 
         /**
         * Return a running EventDispatcher.

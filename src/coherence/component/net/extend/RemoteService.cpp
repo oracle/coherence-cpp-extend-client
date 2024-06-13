@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/net/extend/RemoteService.hpp"
 
@@ -64,16 +64,6 @@ bool RemoteService::isServiceThread(bool /*fStrict*/) const
         }
     return false;
     }
-
-void RemoteService::drainEvents()
-    {
-    Initiator::Handle hInitiator = cast<Initiator::Handle>(getInitiator());
-    if (NULL != hInitiator)
-        {
-        hInitiator->drainEvents();
-        }
-    }
-
 
 // ----- Service interface --------------------------------------------------
 
@@ -288,7 +278,7 @@ void RemoteService::doConfigure(XmlElement::View vXml)
         {
         COH_THROW (IllegalArgumentException::create("xml configuration must not be null"));
         }
-        
+
     setXml(vXml);
 
     // find the configuration for the Initiator
@@ -336,7 +326,7 @@ void RemoteService::doConfigure(XmlElement::View vXml)
     setRemoteClusterName(vXml->getSafeElement("cluster-name")->getString());
 
     setRemoteServiceName(vXml->getSafeElement("proxy-service-name")->getString());
-    
+
     if (instanceof<TcpInitiator::Handle>(hConInitiator))
         {
         setNameServiceAddressProvider(
@@ -406,7 +396,7 @@ void RemoteService::lookupProxyServiceAddress()
             String::View              vsName        = getRemoteServiceName();
 
             hService->setOperationalContext(getOperationalContext());
-            hService->setServiceName(COH_TO_STRING(getServiceName() 
+            hService->setServiceName(COH_TO_STRING(getServiceName()
                     << ":RemoteNameService"));
             hService->configure(getXml());
 
@@ -552,7 +542,7 @@ XmlElement::View RemoteService::getXml() const
     {
     return f_vXml;
     }
-    
+
 void RemoteService::setXml(XmlElement::View vXml)
     {
     initialize(f_vXml, vXml);

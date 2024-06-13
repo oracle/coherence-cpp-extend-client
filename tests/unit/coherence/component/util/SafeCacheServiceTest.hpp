@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/lang.ns"
 
@@ -75,7 +75,6 @@ class TestRemoteCacheService
         bool m_fStopCalled;
         bool m_fShutdownCalled;
         bool m_fRunning;
-        bool m_fDrainEventsCalled;
         bool m_fThrowExceptionFromReleaseCache;
         bool m_fThrowExceptionFromDestroyCache;
         bool m_fMemberListenerAdded;
@@ -98,7 +97,6 @@ class TestRemoteCacheService
                   m_fStopCalled(false),
                   m_fShutdownCalled(false),
                   m_fRunning(false),
-                  m_fDrainEventsCalled(false),
                   m_fThrowExceptionFromReleaseCache(false),
                   m_fThrowExceptionFromDestroyCache(false),
                   m_fMemberListenerAdded(false),
@@ -161,11 +159,6 @@ class TestRemoteCacheService
             return m_fShutdownCalled;
             }
 
-        bool wasDrainEventsCalled() const
-            {
-            return m_fDrainEventsCalled;
-            }
-
         bool isRunning() const
             {
             return m_fRunning;
@@ -179,11 +172,6 @@ class TestRemoteCacheService
         Collection::View getCacheNames() const
             {
             return m_hCacheNames;
-            }
-
-        void drainEvents()
-            {
-            m_fDrainEventsCalled = true;
             }
 
         void configure(XmlElement::View vXml)
@@ -313,7 +301,6 @@ class TestRemoteCacheService
             m_fStopCalled                     = false;
             m_fShutdownCalled                 = false;
             m_fRunning                        = false;
-            m_fDrainEventsCalled              = false;
             m_fThrowExceptionFromReleaseCache = false;
             m_fThrowExceptionFromDestroyCache = false;
             m_fMemberListenerAdded            = false;
@@ -548,8 +535,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     cast<TestRemoteCacheService::View>(hService->getService());
 
             TS_ASSERT(hWrappedService->wasStartCalled());
-            // assert that true was passed into ensureRunningCacheService(bool)
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
+
             // ensure that the the collection was retrieved from the wrapped service
             TS_ASSERT(vNames == hService->getCacheService()->getCacheNames());
             }
@@ -615,7 +601,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             {
             TestSafeCacheService::Handle hService = newTestService();
             coherence::net::Service::Handle hRemoteService =
-                    hService->ensureRunningService(true);
+                    hService->ensureRunningService();
             TS_ASSERT(hRemoteService->getInfo() == hService->getInfo());
             }
 
@@ -652,17 +638,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             XmlElement::Handle hConfig = SimpleElement::create();
             hService->configure(hConfig);
             TS_ASSERT(hConfig == hService->getConfig());
-            }
-
-        void testDrainEvents()
-            {
-            TestSafeCacheService::Handle hService = newTestService();
-            TestRemoteCacheService::Handle hWrappedService =
-                    TestRemoteCacheService::createRemoteTestService();
-
-            hService->setService(hWrappedService);
-            hService->drainEvents();
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testEnsureCache()
@@ -972,7 +947,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     vWrappedService->getUserContext()));
             TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(vWrappedService->wasStartCalled());
-            TS_ASSERT(vWrappedService->wasDrainEventsCalled());
             }
 
         void testStartWrappedServiceThrowsException()
@@ -1020,7 +994,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     vWrappedService->getUserContext()));
             TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(vWrappedService->wasStartCalled());
-            TS_ASSERT(vWrappedService->wasDrainEventsCalled());
             }
 
         void testStartWhenWrappedServiceStopped()
@@ -1048,7 +1021,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     hWrappedService->getUserContext()));
             TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testStartWithInvalidServiceType()
@@ -1081,7 +1053,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     hWrappedService->getUserContext()));
             TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testStartAfterFailedStart()
@@ -1116,7 +1087,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     hWrappedService->getUserContext()));
             TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testStartInitialStateAndWrappedServiceNotRunning()
@@ -1151,10 +1121,9 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     vWrappedService->getUserContext()));
             TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(vWrappedService->wasStartCalled());
-            TS_ASSERT(vWrappedService->wasDrainEventsCalled());
             }
 
-        void testEnsureRunningServiceDrainEventsFalse()
+        void testEnsureRunningService()
             {
             TestSafeCacheService::Handle hService = newTestService();
             MemberListener::Handle  hMemberListener  = TestListener::create();
@@ -1163,7 +1132,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             hService->addServiceListener(hServiceListener);
 
             TestRemoteCacheService::Handle hWrappedService =
-                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningService(false));
+                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningService());
 
             TS_ASSERT(hService->getService() == hWrappedService);
             TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
@@ -1178,34 +1147,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     hWrappedService->getUserContext()));
             TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(!hWrappedService->wasDrainEventsCalled());
-            }
-
-        void testEnsureRunningServiceDrainEventsTrue()
-            {
-            TestSafeCacheService::Handle hService = newTestService();
-            MemberListener::Handle  hMemberListener  = TestListener::create();
-            ServiceListener::Handle hServiceListener = TestListener::create();
-            hService->addMemberListener(hMemberListener);
-            hService->addServiceListener(hServiceListener);
-
-            TestRemoteCacheService::Handle hWrappedService =
-                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningService(true));
-
-            TS_ASSERT(hService->getService() == hWrappedService);
-            TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
-            TS_ASSERT(hWrappedService->wasMemberListenerAdded());
-            TS_ASSERT(hWrappedService->wasServiceListenerAdded());
-            TS_ASSERT(hService->getSafeServiceState() == SafeService::initial);
-            TS_ASSERT(hService->isRunning());
-            TS_ASSERT(hService->getServiceName()->equals("Test-Safe-Cache-Service"));
-            TS_ASSERT(Object::equals(hService->getServiceName(),
-                    hWrappedService->getServiceName()));
-            TS_ASSERT(Object::equals(hService->getUserContext(),
-                    hWrappedService->getUserContext()));
-            TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
-            TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testEnsureRunningServiceWrappedServiceThrowsException()
@@ -1213,7 +1154,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TestSafeCacheService::Handle hService = newTestService();
             hService->throwExceptionFromServiceStart(true);
 
-            TS_ASSERT_THROWS(hService->ensureRunningService(true),
+            TS_ASSERT_THROWS(hService->ensureRunningService(),
                     IllegalStateException::View);
             TS_ASSERT(NULL == hService->getService());
             TS_ASSERT(hService->getWrappedService()->wasStopCalled());
@@ -1224,7 +1165,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
         void testEnsureRunningServiceNoListenersRegistered()
             {
             TestSafeCacheService::Handle hService = newTestService();
-            hService->ensureRunningService(true);
+            hService->ensureRunningService();
 
             TestRemoteCacheService::Handle hWrappedService =
                     hService->getWrappedService();
@@ -1242,7 +1183,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TS_ASSERT(!hService->isRunning());
             hService->getWrappedService()->resetTestState();
 
-            TS_ASSERT_THROWS(hService->ensureRunningService(true),
+            TS_ASSERT_THROWS(hService->ensureRunningService(),
                     IllegalStateException::View);
 
             TS_ASSERT(!hService->isRunning());
@@ -1259,14 +1200,13 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TestRemoteCacheService::View vWrappedService =
                 cast<TestRemoteCacheService::View>(hService->getService());
 
-            TS_ASSERT(vWrappedService == hService->ensureRunningService(false));
-            TS_ASSERT(!vWrappedService->wasDrainEventsCalled());
+            TS_ASSERT(vWrappedService == hService->ensureRunningService());
             TS_ASSERT(!vWrappedService->wasMemberListenerAdded());
             TS_ASSERT(!vWrappedService->wasServiceListenerAdded());
             TS_ASSERT(!vWrappedService->wasStartCalled());
             }
 
-        void testEnsureRunningCacheServiceDrainEventsFalse()
+        void testEnsureRunningCacheService()
             {
             TestSafeCacheService::Handle hService = newTestService();
             MemberListener::Handle  hMemberListener  = TestListener::create();
@@ -1275,7 +1215,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             hService->addServiceListener(hServiceListener);
 
             TestRemoteCacheService::Handle hWrappedService =
-                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningCacheService(false));
+                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningCacheService());
 
             TS_ASSERT(hService->getService() == hWrappedService);
             TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
@@ -1290,34 +1230,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     hWrappedService->getUserContext()));
             TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(!hWrappedService->wasDrainEventsCalled());
-            }
-
-        void testEnsureRunningCacheServiceDrainEventsTrue()
-            {
-            TestSafeCacheService::Handle hService = newTestService();
-            MemberListener::Handle  hMemberListener  = TestListener::create();
-            ServiceListener::Handle hServiceListener = TestListener::create();
-            hService->addMemberListener(hMemberListener);
-            hService->addServiceListener(hServiceListener);
-
-            TestRemoteCacheService::Handle hWrappedService =
-                    cast<TestRemoteCacheService::Handle>(hService->ensureRunningCacheService(true));
-
-            TS_ASSERT(hService->getService() == hWrappedService);
-            TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
-            TS_ASSERT(hWrappedService->wasMemberListenerAdded());
-            TS_ASSERT(hWrappedService->wasServiceListenerAdded());
-            TS_ASSERT(hService->getSafeServiceState() == SafeService::initial);
-            TS_ASSERT(hService->isRunning());
-            TS_ASSERT(hService->getServiceName()->equals("Test-Safe-Cache-Service"));
-            TS_ASSERT(Object::equals(hService->getServiceName(),
-                    hWrappedService->getServiceName()));
-            TS_ASSERT(Object::equals(hService->getUserContext(),
-                    hWrappedService->getUserContext()));
-            TS_ASSERT(hWrappedService->wasConfigureCalled(hService->getConfig()));
-            TS_ASSERT(hWrappedService->wasStartCalled());
-            TS_ASSERT(hWrappedService->wasDrainEventsCalled());
             }
 
         void testEnsureRunningCacheServiceWrappedServiceThrowsException()
@@ -1325,7 +1237,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TestSafeCacheService::Handle hService = newTestService();
             hService->throwExceptionFromServiceStart(true);
 
-            TS_ASSERT_THROWS(hService->ensureRunningCacheService(true),
+            TS_ASSERT_THROWS(hService->ensureRunningCacheService(),
                     IllegalStateException::View);
             TS_ASSERT(NULL == hService->getService());
             TS_ASSERT(hService->getWrappedService()->wasStopCalled());
@@ -1336,7 +1248,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
         void testEnsureRunningCacheServiceNoListenersRegistered()
             {
             TestSafeCacheService::Handle hService = newTestService();
-            hService->ensureRunningCacheService(true);
+            hService->ensureRunningCacheService();
 
             TestRemoteCacheService::Handle hWrappedService =
                     hService->getWrappedService();
@@ -1354,7 +1266,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TS_ASSERT(!hService->isRunning());
             hService->getWrappedService()->resetTestState();
 
-            TS_ASSERT_THROWS(hService->ensureRunningCacheService(true),
+            TS_ASSERT_THROWS(hService->ensureRunningCacheService(),
                     IllegalStateException::View);
 
             TS_ASSERT(!hService->isRunning());
@@ -1371,8 +1283,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             TestRemoteCacheService::View vWrappedService =
                 cast<TestRemoteCacheService::View>(hService->getService());
 
-            TS_ASSERT(vWrappedService == hService->ensureRunningCacheService(false));
-            TS_ASSERT(!vWrappedService->wasDrainEventsCalled());
+            TS_ASSERT(vWrappedService == hService->ensureRunningCacheService());
             TS_ASSERT(!vWrappedService->wasMemberListenerAdded());
             TS_ASSERT(!vWrappedService->wasServiceListenerAdded());
             TS_ASSERT(!vWrappedService->wasStartCalled());
@@ -1388,7 +1299,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
             hService->addServiceListener(hServiceListener);
 
             TestRemoteCacheService::View vWrappedService = cast<TestRemoteCacheService::View>(
-                    cast<TestSafeCacheService::View>(hService)->ensureRunningService(true));
+                    cast<TestSafeCacheService::View>(hService)->ensureRunningService());
 
             TS_ASSERT(hService->getService() == vWrappedService);
             TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
@@ -1403,7 +1314,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     vWrappedService->getUserContext()));
             TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(vWrappedService->wasStartCalled());
-            TS_ASSERT(vWrappedService->wasDrainEventsCalled());
         }
 
         // Test the const version of ensureRunningCacheService
@@ -1416,7 +1326,7 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
         hService->addServiceListener(hServiceListener);
 
         TestRemoteCacheService::View vWrappedService = cast<TestRemoteCacheService::View>(
-                    cast<TestSafeCacheService::View>(hService)->ensureRunningCacheService(true));
+                    cast<TestSafeCacheService::View>(hService)->ensureRunningCacheService());
 
         TS_ASSERT(hService->getService() == vWrappedService);
         TS_ASSERT(ServiceInfo::remote_cache == hService->getInfo()->getServiceType());
@@ -1431,10 +1341,9 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                 vWrappedService->getUserContext()));
         TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
         TS_ASSERT(vWrappedService->wasStartCalled());
-        TS_ASSERT(vWrappedService->wasDrainEventsCalled());
         }
 
-        // simply calls through to ensureRunningService(true)
+        // simply calls through to ensureRunningService()
         void testGetRunningService()
             {
             TestSafeCacheService::Handle hService = newTestService();
@@ -1459,7 +1368,6 @@ class SafeCacheServiceTest : public CxxTest::TestSuite
                     vWrappedService->getUserContext()));
             TS_ASSERT(vWrappedService->wasConfigureCalled(hService->getConfig()));
             TS_ASSERT(vWrappedService->wasStartCalled());
-            TS_ASSERT(vWrappedService->wasDrainEventsCalled());
             }
 
         void testStop()

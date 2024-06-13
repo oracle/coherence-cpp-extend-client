@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_SAFE_INVOCATION_SERVICE_HPP
 #define COH_SAFE_INVOCATION_SERVICE_HPP
@@ -69,28 +69,18 @@ class COH_EXPORT SafeInvocationService
         * returning it. If the InvocationService is not running and has not
         * been explicitly stopped, the InvocationService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped InvocationService
         */
-        virtual InvocationService::Handle ensureRunningInvocationService(
-                bool fDrain);
+        virtual InvocationService::Handle ensureRunningInvocationService();
 
         /**
         * Ensures that the returned InvocationService is running before
         * returning it. If the InvocationService is not running and has not
         * been explicitly stopped, the InvocationService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped InvocationService
         */
-        virtual InvocationService::View ensureRunningInvocationService(
-                bool fDrain) const;
+        virtual InvocationService::View ensureRunningInvocationService() const;
 
 
     // ----- property getters/setters ---------------------------------------
@@ -112,14 +102,10 @@ class COH_EXPORT SafeInvocationService
         * returning it. If the InvocationService is not running and has not
         * been explicitly stopped, the InvocationService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped InvocationService
         */
         virtual InvocationService::Handle
-                ensureRunningInvocationServiceInternal(bool fDrain) const;
+                ensureRunningInvocationServiceInternal() const;
     };
 
 COH_CLOSE_NAMESPACE3

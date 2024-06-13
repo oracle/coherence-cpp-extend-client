@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/util/SafeCacheService.hpp"
 
@@ -41,8 +41,7 @@ NamedCache::Handle SafeCacheService::ensureCache(String::View vsName)
         {
         COH_SYNCHRONIZED(hNamedCacheStore)
             {
-            NamedCache::Handle hNamedCache = ensureRunningCacheService(
-                    true)->ensureCache(vsName);
+            NamedCache::Handle hNamedCache = ensureRunningCacheService()->ensureCache(vsName);
 
             hSafeCache = SafeNamedCache::create();
 
@@ -60,7 +59,7 @@ NamedCache::Handle SafeCacheService::ensureCache(String::View vsName)
 
 Collection::View SafeCacheService::getCacheNames() const
     {
-    return ensureRunningCacheServiceInternal(true)->getCacheNames();
+    return ensureRunningCacheServiceInternal()->getCacheNames();
     }
 
 void SafeCacheService::releaseCache(NamedCache::Handle hNamedCache)
@@ -138,15 +137,14 @@ void SafeCacheService::setOperationalContext(OperationalContext::View vContext)
 
 // ----- SafeCacheService interface -----------------------------------------
 
-CacheService::Handle SafeCacheService::ensureRunningCacheService(bool fDrain)
+CacheService::Handle SafeCacheService::ensureRunningCacheService()
     {
-    return ensureRunningCacheServiceInternal(fDrain);
+    return ensureRunningCacheServiceInternal();
     }
 
-CacheService::View SafeCacheService::ensureRunningCacheService(
-        bool fDrain) const
+CacheService::View SafeCacheService::ensureRunningCacheService() const
     {
-    return ensureRunningCacheServiceInternal(fDrain);
+    return ensureRunningCacheServiceInternal();
     }
 
 
@@ -171,10 +169,9 @@ void SafeCacheService::removeCacheReference(NamedCache::Handle hNamedCache)
         }
     }
 
-CacheService::Handle SafeCacheService::ensureRunningCacheServiceInternal(
-        bool fDrain) const
+CacheService::Handle SafeCacheService::ensureRunningCacheServiceInternal() const
     {
-    return cast<CacheService::Handle>(ensureRunningServiceInternal(fDrain));
+    return cast<CacheService::Handle>(ensureRunningServiceInternal());
     }
 
 
