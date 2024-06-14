@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
  #include "private/coherence/component/util/SafeInvocationService.hpp"
 
@@ -21,7 +21,7 @@ SafeInvocationService::SafeInvocationService()
 Map::View SafeInvocationService::query(Invocable::Handle hTask,
         Set::View vSetMembers)
     {
-    return ensureRunningInvocationServiceInternal(true)->query(
+    return ensureRunningInvocationServiceInternal()->query(
             hTask, vSetMembers);
     }
 
@@ -29,15 +29,14 @@ Map::View SafeInvocationService::query(Invocable::Handle hTask,
 // ----- SafeInvocationService interface ------------------------------------
 
 InvocationService::Handle
-        SafeInvocationService::ensureRunningInvocationService(bool fDrain)
+        SafeInvocationService::ensureRunningInvocationService()
     {
-    return ensureRunningInvocationServiceInternal(fDrain);
+    return ensureRunningInvocationServiceInternal();
     }
 
-InvocationService::View SafeInvocationService::ensureRunningInvocationService(
-        bool fDrain) const
+InvocationService::View SafeInvocationService::ensureRunningInvocationService() const
     {
-    return ensureRunningInvocationServiceInternal(fDrain);
+    return ensureRunningInvocationServiceInternal();
     }
 
 
@@ -46,17 +45,16 @@ InvocationService::View SafeInvocationService::ensureRunningInvocationService(
 InvocationService::View
         SafeInvocationService::getRunningInvocationService() const
     {
-    return ensureRunningInvocationServiceInternal(true);
+    return ensureRunningInvocationServiceInternal();
     }
 
 
 // ----- helper methods -----------------------------------------------------
 
 InvocationService::Handle
-        SafeInvocationService::ensureRunningInvocationServiceInternal(
-        bool fDrain) const
+        SafeInvocationService::ensureRunningInvocationServiceInternal() const
     {
-    return cast<InvocationService::Handle>(ensureRunningServiceInternal(fDrain));
+    return cast<InvocationService::Handle>(ensureRunningServiceInternal());
     }
 
 COH_CLOSE_NAMESPACE3

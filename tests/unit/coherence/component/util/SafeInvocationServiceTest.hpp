@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 #include "mock/CommonMocks.hpp"
@@ -189,21 +189,12 @@ class SafeInvocationServiceTest : public CxxTest::TestSuite
         hMockWrappedService->setStrict(true);
         hService->setService(hMockWrappedService);
 
-        //set expectations
-        hMockWrappedService->drainEvents();
-
         //replay
         hMockWrappedService->replay();
-        hService->drainEvents();
 
         //verify
         hMockWrappedService->verify();
         }
-
-
-
-
-
 
     void testStart()
         {

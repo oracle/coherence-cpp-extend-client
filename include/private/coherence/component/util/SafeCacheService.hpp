@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_SAFE_CACHE_SERVICE_HPP
 #define COH_SAFE_CACHE_SERVICE_HPP
@@ -96,28 +96,18 @@ class COH_EXPORT SafeCacheService
         * it. If the CacheService is not running and has not been explicitly
         * stopped, theCacheService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped CacheService
         */
-        virtual CacheService::Handle ensureRunningCacheService(
-                bool fDrain);
+        virtual CacheService::Handle ensureRunningCacheService();
 
         /**
         * Ensures that the returned CacheService is running before returning
         * it. If the CacheService is not running and has not been explicitly
         * stopped, theCacheService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped CacheService
         */
-        virtual CacheService::View ensureRunningCacheService(
-                bool fDrain) const;
+        virtual CacheService::View ensureRunningCacheService() const;
 
 
     // ----- helper methods -------------------------------------------------
@@ -135,14 +125,9 @@ class COH_EXPORT SafeCacheService
         * it. If the CacheService is not running and has not been explicitly
         * stopped, theCacheService is restarted.
         *
-        * @param fDrain  if true, the calling thread will be blocked until
-        *                the wrapped CacheService event dispatcher queue is
-        *                empty and all outstanding tasks have been executed
-        *
         * @return the running wrapped CacheService
         */
-        virtual CacheService::Handle ensureRunningCacheServiceInternal(
-                bool fDrain) const;
+        virtual CacheService::Handle ensureRunningCacheServiceInternal() const;
 
 
     // ----- property getters/setters ---------------------------------------

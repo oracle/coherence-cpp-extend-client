@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_SAFE_SERVICE_HPP
 #define COH_SAFE_SERVICE_HPP
@@ -197,35 +197,18 @@ class COH_EXPORT SafeService
         * If the service is not running and has not been explicitly stopped,
         * the service is restarted.
         *
-        * @param fDrain  if true and the wrapped service is restarted, the
-        *                calling thread will be blocked until the wrapped
-        *                service event dispatcher queue is empty and all
-        *                outstanding tasks have been executed
-        *
         * @return the running wrapped service
         */
-        virtual ServiceType::View ensureRunningService(bool fDrain) const;
+        virtual ServiceType::View ensureRunningService() const;
 
         /**
         * Ensure that the wrapped service is running before returning it.
         * If the service is not running and has not been explicitly stopped,
         * the service is restarted.
         *
-        * @param fDrain  if true and the wrapped service is restarted, the
-        *                calling thread will be blocked until the wrapped
-        *                service event dispatcher queue is empty and all
-        *                outstanding tasks have been executed
-        *
         * @return the running wrapped service
         */
-        virtual ServiceType::Handle ensureRunningService(bool fDrain);
-
-        /**
-        * Block the calling thread until the wrapped service event/dispatcher
-        * queue is empty and all outstanding tasks have been/executed.
-        */
-        virtual void drainEvents() const;
-
+        virtual ServiceType::Handle ensureRunningService();
 
     // ----- Object interface -----------------------------------------------
 
@@ -408,15 +391,9 @@ class COH_EXPORT SafeService
         * If the service is not running and has not been explicitly stopped,
         * the service is restarted.
         *
-        * @param fDrain  if true and the wrapped service is restarted, the
-        *                calling thread will be blocked until the wrapped
-        *                service event dispatcher queue is empty and all
-        *                outstanding tasks have been executed
-        *
         * @return the running wrapped service
         */
-        virtual ServiceType::Handle ensureRunningServiceInternal(
-                bool fDrain) const;
+        virtual ServiceType::Handle ensureRunningServiceInternal() const;
 
         /**
         * Stop and catch any exceptions.  Provide a log message if stop

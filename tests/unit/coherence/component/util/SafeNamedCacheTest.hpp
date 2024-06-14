@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 #include "mock/CommonMocks.hpp"
@@ -412,7 +412,6 @@ class SafeNamedCacheTest : public CxxTest::TestSuite
                 getMockSafeCacheService(cache);
 
         //set expectations
-        mockSafeCacheService->drainEvents();
         mockSafeCacheService->releaseCache(cache);
 
         //replay
@@ -435,7 +434,6 @@ class SafeNamedCacheTest : public CxxTest::TestSuite
                 getMockSafeCacheService(cache);
 
         //set expectations
-        mockSafeCacheService->drainEvents();
         mockSafeCacheService->destroyCache(cache);
 
         //replay

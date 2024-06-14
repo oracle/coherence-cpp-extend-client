@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/util/SafeService.hpp"
 
@@ -230,7 +230,7 @@ SafeService::SafeService()
 
 ServiceInfo::View SafeService::getInfo() const
     {
-    return ensureRunningServiceInternal(true)->getInfo();
+    return ensureRunningServiceInternal()->getInfo();
     }
 
 void SafeService::addMemberListener(MemberListener::Handle hListener)
@@ -358,7 +358,7 @@ void SafeService::start()
 
         try
             {
-            ensureRunningServiceInternal(false);
+            ensureRunningServiceInternal();
             }
         catch (...)
             {
@@ -369,7 +369,6 @@ void SafeService::start()
 
         m_safeServiceState = started;
         }
-    drainEvents();
     }
 
 void SafeService::shutdown()
@@ -421,36 +420,14 @@ void SafeService::stop()
 
 // ----- SafeService interface ----------------------------------------------
 
-ServiceType::View SafeService::ensureRunningService(bool fDrain) const
+ServiceType::View SafeService::ensureRunningService() const
     {
-    return ensureRunningServiceInternal(fDrain);
+    return ensureRunningServiceInternal();
     }
 
-ServiceType::Handle SafeService::ensureRunningService(bool fDrain)
+ServiceType::Handle SafeService::ensureRunningService()
     {
-    return ensureRunningServiceInternal(fDrain);
-    }
-
-void SafeService::drainEvents() const
-    {
-    ServiceType::View     vService       = getService();
-    RemoteService::Handle hRemoteService =
-            cast<RemoteService::Handle>(m_hService);
-
-    if (NULL != hRemoteService)
-        {
-        hRemoteService->drainEvents();
-        }
-    else
-        {
-        coherence::component::util::Service::Handle hService =
-            cast<coherence::component::util::Service::Handle>(m_hService);
-
-        if (NULL != hService)
-            {
-            hService->drainEvents();
-            }
-        }
+    return ensureRunningServiceInternal();
     }
 
 void SafeService::setThreadGroup(ThreadGroup::Handle hGroup)
@@ -566,7 +543,7 @@ ServiceInfo::ServiceType SafeService::getServiceType() const
 
 ServiceType::View SafeService::getRunningService() const
     {
-    return ensureRunningServiceInternal(true);
+    return ensureRunningServiceInternal();
     }
 
 Subject::View SafeService::getSubject() const
@@ -674,8 +651,7 @@ void SafeService::cleanup()
     f_hServiceListeners->removeAll();
     }
 
-ServiceType::Handle SafeService::ensureRunningServiceInternal(
-        bool fDrain) const
+ServiceType::Handle SafeService::ensureRunningServiceInternal() const
     {
     ServiceType::Handle hService = m_hService;
     if (NULL == hService || !hService->isRunning())
@@ -708,11 +684,6 @@ ServiceType::Handle SafeService::ensureRunningServiceInternal(
                     COH_THROW (IllegalStateException::create(
                             "SafeService was explicitly stopped."));
                 }
-            }
-
-        if (fDrain)
-            {
-            drainEvents();
             }
         }
     return hService;

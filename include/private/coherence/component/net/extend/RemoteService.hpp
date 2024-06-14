@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_REMOTE_SERVICE_HPP
 #define COH_REMOTE_SERVICE_HPP
@@ -88,14 +88,6 @@ class COH_EXPORT RemoteService
         * @return true if the current thread is one of the Service threads
         */
         virtual bool isServiceThread(bool fStrict) const;
-
-        /**
-        * Block the calling thread until the ConnectionInitiator
-        * EventDispatcher Queue is empty and all outstanding tasks have been
-        * executed.
-        */
-        virtual void drainEvents();
-
 
     // ----- Service interface ----------------------------------------------
 
@@ -315,16 +307,16 @@ class COH_EXPORT RemoteService
         * @return an open Channel to the ProxyService
         */
         virtual Channel::Handle openChannel() = 0;
-        
+
         /**
-        * Obtains the connect address of the ProxyService from a remote 
+        * Obtains the connect address of the ProxyService from a remote
         * NameService.
         *
         * @since Coherence 12.1.2
         */
         virtual void lookupProxyServiceAddress();
-        
-        
+
+
     // ----- accessors ------------------------------------------------------
 
     public:
@@ -369,7 +361,7 @@ class COH_EXPORT RemoteService
         * @param vsName  the new Service name
         */
         virtual void setServiceName(String::View vsName);
-        
+
         /**
          * Return the name of the remote Cluster to which this RemoteService will connect.
          *
@@ -396,7 +388,7 @@ class COH_EXPORT RemoteService
         * @since Coherence 12.2.1
         */
         virtual String::View getRemoteServiceName() const;
-        
+
         /**
         * Set the remote proxy service name.
         *
@@ -406,7 +398,7 @@ class COH_EXPORT RemoteService
         */
         virtual void setRemoteServiceName(String::View vsName);
 
-        /** 
+        /**
         * Return whether the remote AddressProvider address are to be used
         * to look up the remote address of the ProxyService.
         *
@@ -416,20 +408,20 @@ class COH_EXPORT RemoteService
         * @since Coherence 12.1.2
         */
         virtual bool isNameServiceAddressProvider() const;
-        
+
         /**
         * Configure whether the remote AddressProvider address are to be used
         * to look up the remote address of the ProxyService.
-        * 
-        * @param fNameServiceAddressProvider  true if the remote AddressProvider 
-        *                                     address are to be use to look up 
+        *
+        * @param fNameServiceAddressProvider  true if the remote AddressProvider
+        *                                     address are to be use to look up
         *                                     the remote address of the ProxyService
         *
         * @since Coherence 12.1.2
         */
         virtual void setNameServiceAddressProvider(bool fNameServiceAddressProvider);
 
-        /** 
+        /**
         * Return the XML element used to configure the Initiator.
         *
         * @return the XML element used to configure the Initiator
@@ -437,17 +429,17 @@ class COH_EXPORT RemoteService
         * @since Coherence 12.1.2
         */
         virtual XmlElement::View getXml() const;
-        
+
         /**
         * Configure the XML element used to configure the Initiator.
-        * 
+        *
         * @param vXml  the XML element used to configure the Initiator
         *
         * @since Coherence 12.1.2
         */
         void setXml(XmlElement::View vXml);
 
-            
+
     protected:
         /**
         * Configure the ConnectionInitiator used to connect to a
@@ -496,13 +488,13 @@ class COH_EXPORT RemoteService
         * The name of the remote ProxyService.
         */
         MemberView<String> m_vsRemoteServiceName;
-        
+
         /**
         * Whether the remote AddressProvider address are to be used
         * to look up the remote address of the ProxyService.
         */
         bool m_fNameServiceAddressProvider;
-        
+
         /**
         * The XML element used to configure the Initiator.
         */
