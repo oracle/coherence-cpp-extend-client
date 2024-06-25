@@ -1,4 +1,4 @@
-# Copyright 2020, 2023, Oracle Corporation and/or its affiliates.
+# Copyright 2020, 2024, Oracle Corporation and/or its affiliates.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown at
 # https://oss.oracle.com/licenses/upl.
@@ -68,9 +68,7 @@ jobs:
     - name: Build
       run: |
         . ./bin/cfglocal.sh
-        sed -i "s|-Werror|-Wno-error|g" prj/build-import.xml
-        git diff
-        ant -f prj/build.xml clean build
+        ant -f prj/build.xml -Dextra="-Wno-error" clean build
 
     # Run unit tests
     - name: Unit tests
