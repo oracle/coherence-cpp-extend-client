@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "private/coherence/component/util/Peer.hpp"
 
@@ -293,7 +293,7 @@ void Peer::onConnectionError(PofConnection::Handle hConnection,
 
     dispatchConnectionEvent(hConnection, ConnectionEvent::connection_error, ohe);
 
-    COH_LOG("Closed: " << hConnection << " due to:\n" << ohe, 6);
+    COH_LOG("Closed: " << hConnection << " due to: " << ohe->getName() << ": " << ohe->getMessage(), 6);
     }
 
 void Peer::onConnectionOpened(PofConnection::Handle hConnection)
