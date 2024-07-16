@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/lang/String.hpp"
 
@@ -227,11 +227,29 @@ namespace
             switch (ch & 0xF0)
                 {
                 case 0xF0:
-                    // 4-octet format:  1111 0xxx, 10 xx xxxx, 10xx xxxx, 10xx xxxx
-                    COH_THROW_STREAM (IllegalArgumentException,
-                            "encountered non-BMP Unicode character 0x" <<
-                            std::hex << uint32_t(ch) << std::dec <<
-                            " at index: " << cb);
+                    // 4-octet format:  1111 xxxx, 10xx xxxx, 10xx xxxx, 10xx xxxx (supplemental plane)
+                    // ensure there is at least one more byte
+                    ++cb;
+                    if (cb + 1 >= c)
+                        {
+                        // Octet indicates more bytes in character,
+                        // but cb will go past the end of the string
+                        COH_THROW_STREAM (IllegalArgumentException,
+                                "encountered incomplete UTF-8 character 0x" <<
+                                std::hex << uint32_t(ch) << std::dec <<
+                                " at the end of the string");
+                        }
+
+                    // validate that the next byte is a continuation
+                    if ( (a[cb] & 0xC0) != 0x80)
+                        {
+                        // Octet indicates not a continuation byte
+                        COH_THROW_STREAM (IllegalArgumentException,
+                                "encountered invalid UTF-8 character 0x" <<
+                                std::hex << uint32_t(ch) << std::dec <<
+                                " at index " << cb);
+                        }
+                    // fall through
 
                 case 0xE0:
                     // 3-octet format:  1110 xxxx, 10xx xxxx, 10xx xxxx
@@ -292,7 +310,7 @@ namespace
                     // 1-octet format:  0xxx xxxx
                     ++cb;
                     break;
-                    
+
                 case 0x00:
                     // 1-octet format. Possibly NUL
                     if (0 == ch && String::npos == c)

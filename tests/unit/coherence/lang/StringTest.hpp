@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 
@@ -479,7 +479,7 @@ class StringTest : public CxxTest::TestSuite
             String::View vString = String::create(data);
             std::string  conv    = vString;
             TS_ASSERT(data == conv);
-            
+
             // Test fix for COH-3709
             car[0] = (char) 0x01;
             car[1] = (char) 0xDD;
@@ -499,7 +499,7 @@ class StringTest : public CxxTest::TestSuite
 
         void testUTF8Validation()
             {
-            // Test Euro character U+20AC; good 3 byte 
+            // test Euro character U+20AC; good 3 byte
             char euro[4];
             euro[0] = (char) 0xe2;
             euro[1] = (char) 0x82;
@@ -509,8 +509,8 @@ class StringTest : public CxxTest::TestSuite
             String::View vString = String::create(data);
             std::string  conv    = vString;
             TS_ASSERT_EQUALS(data, conv);
-            
-            // Test bad 3 byte, bad second byte 
+
+            // test bad 3 byte, bad second byte
             char three2[4];
             three2[0] = (char) 0xe2;
             three2[1] = (char) 0x22; // bad - should have upper bits '10'
@@ -518,7 +518,8 @@ class StringTest : public CxxTest::TestSuite
             three2[3] =        '\0';
             std::string data2(three2);
             TS_ASSERT_THROWS(String::create(data2), IllegalArgumentException::View);
-            // Test bad 3 byte, bad third byte 
+
+            // test bad 3 byte, bad third byte
             char three3[4];
             three3[0] = (char) 0xe2;
             three3[1] = (char) 0x82;
@@ -527,7 +528,7 @@ class StringTest : public CxxTest::TestSuite
             std::string data3(three3);
             TS_ASSERT_THROWS(String::create(data3), IllegalArgumentException::View);
 
-            // Test good 2 byte 
+            // test good 2 byte
             char two[3];
             two[0] = (char) 0xc2; // c2 a2 is cent character
             two[1] = (char) 0xa2;
@@ -537,12 +538,108 @@ class StringTest : public CxxTest::TestSuite
             std::string  conv4    = vString2;
             TS_ASSERT_EQUALS(data4, conv4);
 
-            // Test bad 2 byte 
+            // test bad 2 byte
             char two2[3];
-            two2[0] = (char) 0xc2; 
-            two2[1] = (char) 0x22; // bad -should have upper bits '10' 
+            two2[0] = (char) 0xc2;
+            two2[1] = (char) 0x22; // bad -should have upper bits '10'
             two2[2] =        '\0';
             std::string  data5(two2);
             TS_ASSERT_THROWS(String::create(data5), IllegalArgumentException::View);
+
+            // test good 4 byte single character: 0xf0938080
+            char four[5];
+            four[0] = (char) 0xf0;
+            four[1] = (char) 0x93;
+            four[2] = (char) 0x80;
+            four[3] = (char) 0x80;
+            four[4] =        '\0';
+            std::string  data6(four);
+            String::View vString3 = String::create(data6);
+            std::string  conv5    = vString3;
+            TS_ASSERT_EQUALS(data6, conv5);
+            TS_ASSERT_EQUALS(size32_t(1), vString3->length());
+
+            // test good 4 byte multiple characters: 0xf09f8ebf, 0xf09f8f80, 0xf09f8e89, 0xf09f9294
+            char four2[17];
+            // 0xf09f8ebf
+            four2[0] = (char) 0xf0;
+            four2[1] = (char) 0x9f;
+            four2[2] = (char) 0x8e;
+            four2[3] = (char) 0xbf;
+            // 0xf09f8f80
+            four2[4] = (char) 0xf0;
+            four2[5] = (char) 0x9f;
+            four2[6] = (char) 0x8f;
+            four2[7] = (char) 0x80;
+            // 0xf09f8e89
+            four2[8]  = (char) 0xf0;
+            four2[9]  = (char) 0x9f;
+            four2[10] = (char) 0x8e;
+            four2[11] = (char) 0x89;
+            // 0xf09f9294
+            four2[12] = (char) 0xf0;
+            four2[13] = (char) 0x9f;
+            four2[14] = (char) 0x92;
+            four2[15] = (char) 0x94;
+            four2[16] =        '\0';
+            std::string data7(four2);
+            vString3 = String::create(data7);
+            conv5    = vString3;
+            TS_ASSERT_EQUALS(data7, conv5);
+            TS_ASSERT_EQUALS(size32_t(4), vString3->length());
+
+            // test bad 4 byte, bad second byte
+            char four3[5];
+            four3[0] = (char) 0xf0;
+            four3[1] = (char) 0x22; // bad - should have upper bits '10'
+            four3[2] = (char) 0x8e;
+            four3[3] = (char) 0xbf;
+            four3[4] =        '\0';
+            std::string data8(four3);
+            TS_ASSERT_THROWS(String::create(data8), IllegalArgumentException::View);
+
+            // test bad 4 byte, bad third byte
+            char four4[5];
+            four4[0] = (char) 0xf0;
+            four4[1] = (char) 0x9f;
+            four4[2] = (char) 0x22; // bad - should have upper bits '10'
+            four4[3] = (char) 0xbf;
+            four4[4] =        '\0';
+            std::string data9(four4);
+            TS_ASSERT_THROWS(String::create(data9), IllegalArgumentException::View);
+
+            // test bad 4 byte, bad fourth byte
+            char four5[5];
+            four5[0] = (char) 0xf0;
+            four5[1] = (char) 0x9f;
+            four5[2] = (char) 0x8e;
+            four5[3] = (char) 0x29; // bad - should have upper bits '10'
+            four5[4] =        '\0';
+            std::string data10(four5);
+            TS_ASSERT_THROWS(String::create(data10), IllegalArgumentException::View);
+
+            // test bad 4 byte, incomplete - just one byte
+            char four6[2];
+            four6[0] = (char) 0xf0;
+            four6[1] =        '\0';
+            std::string data11(four6);
+            TS_ASSERT_THROWS(String::create(data11), IllegalArgumentException::View);
+
+            // test bad 4 byte, incomplete - just two bytes
+            char four7[3];
+            four7[0] = (char) 0xf0;
+            four7[1] = (char) 0x93;
+            four7[2] =        '\0';
+            std::string data12(four7);
+            TS_ASSERT_THROWS(String::create(data12), IllegalArgumentException::View);
+
+            // test bad 4 byte, incomplete - just three bytes
+            char four8[4];
+            four8[0] = (char) 0xf0;
+            four8[1] = (char) 0x93;
+            four8[2] = (char) 0x80;
+            four8[3] =        '\0';
+            std::string data13(four8);
+            TS_ASSERT_THROWS(String::create(data13), IllegalArgumentException::View);
             }
     };

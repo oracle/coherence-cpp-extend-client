@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/lang.ns"
 
@@ -761,6 +761,38 @@ class OctetArrayReadBufferSuite : public CxxTest::TestSuite
             TS_ASSERT(hbi->readString() == NULL);
             TS_ASSERT(hbi->readString()->equals(vs));
             TS_ASSERT(hbi->available() == 0);
+
+            // 2 character 4 byte UTF-8 string - 0xf0938080, 0xf09f8ebf
+            char four[9];
+            // 0xf0938080
+            four[0] = (char) 0xf0;
+            four[1] = (char) 0x93;
+            four[2] = (char) 0x80;
+            four[3] = (char) 0x80;
+            // 0xf09f8ebf
+            four[4] = (char) 0xf0;
+            four[5] = (char) 0x9f;
+            four[6] = (char) 0x8e;
+            four[7] = (char) 0xbf;
+            four[8] =        '\0';
+            std::string data(four);
+
+            vs  = String::create(data);
+            TS_ASSERT_EQUALS(size32_t(2), vs->length());
+            hwb = OctetArrayWriteBuffer::create(10);
+            hbo = hwb->getBufferOutput();
+            hbo->writeString(vs);
+            vab = hwb->toOctetArray();
+
+            TS_ASSERT_EQUALS(size32_t(9), vab->length);
+            hrb = OctetArrayReadBuffer::create(vab, 0, 9);
+            TS_ASSERT_EQUALS(size32_t(9), hrb->length());
+            hbi = hrb->getBufferInput();
+
+            String::View vsOut = hbi->readString();
+            TS_ASSERT(vsOut->equals(vs));
+            std::string conv = vsOut;
+            TS_ASSERT_EQUALS(data, conv);
             }
 
         /**
