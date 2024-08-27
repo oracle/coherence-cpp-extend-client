@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_TEST_CLASSES_HPP
 #define COH_TEST_CLASSES_HPP
@@ -18,10 +18,17 @@
 #include "coherence/net/DefaultConfigurableCacheFactory.hpp"
 #include "coherence/net/AbstractInvocable.hpp"
 #include "coherence/net/InvocationService.hpp"
+
 #include "coherence/net/cache/KeyAssociation.hpp"
 
+#include "coherence/util/Filter.hpp"
+#include "coherence/util/Iterator.hpp"
 #include "coherence/util/QueryMap.hpp"
 #include "coherence/util/ValueExtractor.hpp"
+
+#include "coherence/util/processor/AbstractProcessor.hpp"
+
+#include "common/TestUtils.hpp"
 
 COH_OPEN_NAMESPACE2(common,test)
 
@@ -33,8 +40,11 @@ using coherence::net::CacheFactory;
 using coherence::net::DefaultConfigurableCacheFactory;
 using coherence::net::InvocationService;
 using coherence::net::cache::KeyAssociation;
+using coherence::util::Filter;
+using coherence::util::Iterator;
 using coherence::util::QueryMap;
 using coherence::util::ValueExtractor;
+using coherence::util::processor::AbstractProcessor;
 
 class TestQueryMapEntry :
     public class_spec<TestQueryMapEntry,
@@ -516,8 +526,8 @@ class ExampleAddress
         * @param vsState   State name
         * @param vsZip     Zip (postal) code
         */
-        ExampleAddress(String::View vsStreet1 = String::null_string, 
-                       String::View vsStreet2 = String::null_string, 
+        ExampleAddress(String::View vsStreet1 = String::null_string,
+                       String::View vsStreet2 = String::null_string,
                        String::View vsCity = String::null_string,
                        String::View vsState = String::null_string,
                        String::View vsZip = String::null_string,
@@ -525,7 +535,7 @@ class ExampleAddress
             : m_vsStreet1(self(), vsStreet1),
               m_vsStreet2(self(), vsStreet2),
               m_vsCity(self(), vsCity),
-              m_vsState(self(), vsState), 
+              m_vsState(self(), vsState),
               m_vsZip(self(), vsZip),
               m_vsCountry(self(), vsCountry)
             {
@@ -860,7 +870,7 @@ class ExampleAddress
 * @since Coherence 3.7.1.10
 * @author par 7/24/13
 */
-class TestContact 
+class TestContact
     : public class_spec<TestContact,
         extends<Object>,
         implements<PortableObject, Comparable> >
@@ -879,7 +889,7 @@ class TestContact
         * @param sState   the state where the person lives
         * @param sZip     the zip code of the city where the person lives
         */
-        TestContact(String::View vsFirstName, 
+        TestContact(String::View vsFirstName,
                     String::View vsLastName,
                     ExampleAddress::View vHomeAddress)
             : m_vsFirstName(self(), vsFirstName),
@@ -1117,7 +1127,7 @@ class FilterFetcher
         * @inheritDoc
         */
         void readExternal(PofReader::Handle hIn)
-            { 
+            {
             m_fFetchExtractor = hIn->readBoolean(0);
             m_vQuery          = hIn->readString(1);
             }
@@ -1156,7 +1166,7 @@ class FilterFetcher
 * @since Coherence 3.7.1.10
 * @par 7/24/13
 */
-class FilterFactory 
+class FilterFactory
     : public class_spec<FilterFactory,
         extends<Object> >
     {
@@ -1202,7 +1212,7 @@ class FilterFactory
         *
         * @param sQuery     the query string.
         */
-        static ValueExtractor::View createExtractor(String::View vsQuery, String::View vsServiceName) 
+        static ValueExtractor::View createExtractor(String::View vsQuery, String::View vsServiceName)
             {
             InvocationService::Handle hService = cast<InvocationService::Handle>
                     (CacheFactory::getService(vsServiceName));
@@ -1220,6 +1230,48 @@ class FilterFactory
             return NULL;
             }
     };
+
+/**
+ * The TestUtf8Processor is used to validate UTF-8 serialization.
+ * <p>
+ * The validation logic is in the corresponding Java class.
+ *
+ * @since 14.1.2.0.0
+ **/
+class TestUtf8Processor
+    : public class_spec<TestUtf8Processor,
+        extends<AbstractProcessor>,
+        implements<PortableObject> >
+    {
+    friend class factory<TestUtf8Processor>;
+
+    // ----- constructors ---------------------------------------------------
+
+    public:
+        /**
+         * Default constructor.
+         */
+        TestUtf8Processor()
+            { }
+
+    // ----- PortableObject interface -------------------------------------------
+
+    public:
+        /**
+         * @inheritDoc
+         */
+        void readExternal(PofReader::Handle /* hIn */)
+            {
+            }
+
+        /**
+         * @inheritDoc
+         */
+        void writeExternal(PofWriter::Handle /* hOut */) const
+            {
+            }
+    };
+    COH_REGISTER_PORTABLE_CLASS(1513, TestUtf8Processor);
 
 COH_CLOSE_NAMESPACE2
 
