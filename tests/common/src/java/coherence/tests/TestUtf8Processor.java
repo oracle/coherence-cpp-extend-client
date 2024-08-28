@@ -46,9 +46,7 @@ public class TestUtf8Processor
     @Override
     public Object process(InvocableMap.Entry entry)
         {
-        // string initialization copied from Java ExternalizableHelperTest
-        String       sExpected   = new String(toBytes(new int[] {0xf0938080, 0xf09f8ebf, 0xf09f8f80, 0xf09f8e89, 0xf09f9294}),
-                                              StandardCharsets.UTF_8);
+        String       sExpected   = new String(m_abStringInBytes, StandardCharsets.UTF_8);
         BinaryEntry  binEntry    = (BinaryEntry) entry;
         Binary       binValue    = ExternalizableHelper.getUndecorated(binEntry.getBinaryValue());
         Binary       binExpected = ExternalizableHelper.getUndecorated((Binary) binEntry.getContext()
@@ -75,27 +73,17 @@ public class TestUtf8Processor
     public void readExternal(PofReader in)
             throws IOException
         {
+        m_abStringInBytes = in.readByteArray(0);
         }
 
     @Override
     public void writeExternal(PofWriter out)
             throws IOException
         {
-        }
-
-    // ----- helper methods -------------------------------------------------
-
-    private static byte[] toBytes(int[] ai)
-        {
-        ByteBuffer buf = ByteBuffer.allocate(4 * ai.length);
-        for (int n : ai)
-            {
-            buf.putInt(n);
-            }
-        return buf.array();
+        out.writeByteArray(0, m_abStringInBytes);
         }
 
     // ----- data members ---------------------------------------------------
 
-    private int m_nId;
+    private byte[] m_abStringInBytes;
     }

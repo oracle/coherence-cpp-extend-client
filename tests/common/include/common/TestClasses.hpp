@@ -1252,24 +1252,40 @@ class TestUtf8Processor
          * Default constructor.
          */
         TestUtf8Processor()
+            : m_vabStringInBytes(self())
             { }
 
-    // ----- PortableObject interface -------------------------------------------
+        TestUtf8Processor(Array<octet_t>::View vab)
+            : m_vabStringInBytes(self())
+            {
+            m_vabStringInBytes = cast<Array<octet_t>::View>(vab->clone());
+            }
+
+    // ----- PortableObject interface ---------------------------------------
 
     public:
         /**
          * @inheritDoc
          */
-        void readExternal(PofReader::Handle /* hIn */)
+        void readExternal(PofReader::Handle hIn)
             {
+            m_vabStringInBytes = hIn->readOctetArray(0);
             }
 
         /**
          * @inheritDoc
          */
-        void writeExternal(PofWriter::Handle /* hOut */) const
+        void writeExternal(PofWriter::Handle hOut) const
             {
+            hOut->writeOctetArray(0, m_vabStringInBytes);
             }
+
+    // ----- data members ---------------------------------------------------
+
+    /**
+     * The raw bytes of the UTF-8 string to validate.
+     */
+    MemberView<Array<octet_t> > m_vabStringInBytes;
     };
     COH_REGISTER_PORTABLE_CLASS(1513, TestUtf8Processor);
 

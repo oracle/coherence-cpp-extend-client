@@ -29,10 +29,11 @@ class Utf8Test : public CxxTest::TestSuite
          */
         void test4ByteUtf8()
             {
-            NamedCache::Handle hCache = ensureCleanCache("dist-cache");
+            NamedCache::Handle hCache    = ensureCleanCache("dist-cache");
+            const int          NUM_BYTES = 20; // number of bytes in the byte array to be converted to string
 
             // create UTF-8 4-byte characters: 0xf0938080, 0xf09f8ebf, 0xf09f8f80, 0xf09f8e89, 0xf09f9294
-            char five[21];
+            char five[NUM_BYTES + 1]; // add byte for null
             // 0xf0938080
             five[0]  = (char) 0xf0;
             five[1]  = (char) 0x93;
@@ -66,8 +67,16 @@ class Utf8Test : public CxxTest::TestSuite
 
             hCache->put(vNid, vsTest);
 
+            // do not include the null byte as it will be added as another character on Java
+            // when converting to a String
+            Array<octet_t>::Handle hab = Array<octet_t>::create(NUM_BYTES);
+            for (int i = 0; i < NUM_BYTES; ++i)
+                {
+                hab[i] = five[i];
+                }
+
             // compare the Java serialized value to the C++ serialized value
-            Object::View vResult = hCache->invoke(vNid, TestUtf8Processor::create());
+            Object::View vResult = hCache->invoke(vNid, TestUtf8Processor::create(hab));
 
             TS_ASSERT(vResult->equals(Boolean::valueOf(true)));
             }
