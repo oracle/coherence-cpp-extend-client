@@ -50,7 +50,7 @@ class UniversalExtractorTest : public CxxTest::TestSuite
             hCache->put(String::create("EqualsFilter2"), hFilter2);
 
             UniversalExtractor::View vUExtract =
-                UniversalExtractor::create(String::create("getValue"));
+                UniversalExtractor::create(String::create("getValue()"));
             EqualsFilter::View       hFilter  = EqualsFilter::create(vUExtract,
                 vFilterValue);
 
