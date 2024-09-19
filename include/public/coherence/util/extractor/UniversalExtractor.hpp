@@ -81,16 +81,6 @@ class COH_EXPORT UniversalExtractor
         /**
          * {@inheritDoc}
          */
-        virtual bool equals(Object::View v) const;
-
-        /**
-         * {@inheritDoc}
-         */
-        virtual size32_t hashCode() const;
-
-        /**
-         * {@inheritDoc}
-         */
         virtual TypedHandle<const String> toString() const;
 
     // ----- data member accessors ------------------------------------------
@@ -122,6 +112,14 @@ class COH_EXPORT UniversalExtractor
          * The parameter array. Must be null or zero length for a property based extractor.
          */
         FinalView<ObjectArray> f_vaParam;
+
+    // ----- constants ------------------------------------------------------
+
+    public:
+        /**
+         * If f_vsName ends with this suffix, it represents a method name.
+         */
+        static String::View getMethodSuffix();
     };
 
 COH_CLOSE_NAMESPACE3

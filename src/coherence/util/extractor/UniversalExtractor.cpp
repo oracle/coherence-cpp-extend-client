@@ -23,6 +23,12 @@ UniversalExtractor::UniversalExtractor(String::View vsName,
     : f_vsName(self(), vsName), f_vaParam(self(), vaParam)
     {
     COH_ENSURE_PARAM(vsName);
+    if (vaParam != NULL && vaParam->length > 0 && !vsName->endsWith(getMethodSuffix()))
+        {
+        COH_THROW_STREAM(IllegalArgumentException, "UniversalExtractor constructor: parameter vsName[value:"
+            << vsName << "] must end with method suffix \"" << getMethodSuffix()
+            << "\" when optional parameters provided");
+        }
     m_nTarget = nTarget;
     }
 
@@ -53,29 +59,6 @@ void UniversalExtractor::writeExternal(PofWriter::Handle hOut) const
 
 // ----- Object interface ---------------------------------------------------
 
-bool UniversalExtractor::equals(Object::View v) const
-    {
-    if (this == v)
-        {
-        return true;
-        }
-
-    UniversalExtractor::View that = cast<UniversalExtractor::View>(v, false);
-    if (that != NULL)
-        {
-        return this->m_nTarget == that->m_nTarget &&
-            Object::equals(f_vsName, that->f_vsName) &&
-            Object::equals(f_vaParam, that->f_vaParam);
-        }
-
-    return false;
-    }
-
-size32_t UniversalExtractor::hashCode() const
-    {
-    return f_vsName->hashCode();
-    }
-
 TypedHandle<const String> UniversalExtractor::toString() const
     {
     String::View vs = "";
@@ -99,5 +82,15 @@ ObjectArray::View UniversalExtractor::getParameters() const
     {
     return f_vaParam;
     }
+
+// ----- constants ----------------------------------------------------------
+
+String::View UniversalExtractor::getMethodSuffix()
+    {
+    static FinalView<String> vsMethodSuffix(System::common(), String::create("()"));
+
+    return vsMethodSuffix;
+    }
+COH_STATIC_INIT(UniversalExtractor::getMethodSuffix());
 
 COH_CLOSE_NAMESPACE3
