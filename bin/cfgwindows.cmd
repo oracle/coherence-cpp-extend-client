@@ -1,8 +1,8 @@
 rem
-rem  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+rem  Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 rem
 rem  Licensed under the Universal Permissive License v 1.0 as shown at
-rem  http://oss.oracle.com/licenses/upl.
+rem  https://oss.oracle.com/licenses/upl.
 rem
 
 @echo off
@@ -119,6 +119,8 @@ if "x%VisualStudioVersion%"=="x" (
   echo Environment variable VisualStudioVersion not set.
   echo Assuming VS 2010...
   set MSVC_VER=2010
+) else if "%VisualStudioVersion%"=="17.0" (
+  set MSVC_VER=2022
 ) else if "%VisualStudioVersion%"=="16.0" (
   set MSVC_VER=2019
 ) else if "%VisualStudioVersion%"=="15.0" (
