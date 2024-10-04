@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_GLIBC_BACKTRACE_HPP
 #define COH_GLIBC_BACKTRACE_HPP
@@ -14,6 +14,7 @@
 #include "private/coherence/native/NativeBacktrace.hpp"
 #include "private/coherence/native/NativeABI.hpp"
 #include "private/coherence/native/NativeStackElement.hpp"
+
 #include "private/coherence/util/StringHelper.hpp"
 
 #ifndef __USE_GNU
@@ -34,7 +35,6 @@ COH_OPEN_NAMESPACE2(coherence,native)
 using coherence::util::ArrayList;
 using coherence::util::StringHelper;
 
-
 // ----- file local helpers -------------------------------------------------
 
 namespace
@@ -52,49 +52,56 @@ namespace
 
 ObjectArray::Handle NativeBacktrace::getStackTrace(size32_t cTrim)
     {
-    static bool fTrim = Boolean::parse(System::getProperty
+    // COH-31048 - more relevant for Windows, but include support here as well
+    static bool fEnabled = Boolean::parse(System::getProperty
+        ("coherence.backtrace.enabled", "true"));
+
+    static bool fTrim    = Boolean::parse(System::getProperty
         ("coherence.threaddump.trim", "true")); // for diagnostics
 
-    ArrayList::Handle haFrames    = ArrayList::create();
-    String::View       vsThreadRun = getThreadRun();
-    void *frames[100];
-    int   size;
-
-    size = backtrace(frames, 100);
-    cTrim += 1;
-
-    for (int i = 0, c = size - 1; i < c; i++)
+    ArrayList::Handle haFrames = ArrayList::create();
+    if (fEnabled)
         {
-        if (fTrim && cTrim)
-            {
-            --cTrim;
-            }
-        else
-            {
-            void *pc = frames[i];
+        String::View vsThreadRun = getThreadRun();
+        void        *frames[100];
+        int          size;
 
-            Dl_info info;
+        size = backtrace(frames, 100);
+        cTrim += 1;
 
-            if (dladdr(pc, &info) == 0)
+        for (int i = 0, c = size - 1; i < c; i++)
+            {
+            if (fTrim && cTrim)
                 {
-                break;
+                --cTrim;
                 }
+            else
+                {
+                void *pc = frames[i];
 
-            String::View vsName = (info.dli_sname
-                    ? NativeABI::demangle(info.dli_sname)
-                    : (String::View) StringHelper::getEmptyString());
+                Dl_info info;
 
-             haFrames->add(NativeStackElement::create(
-                (info.dli_fname
-                    ? String::create(info.dli_fname)
-                    : StringHelper::getEmptyString()),
-                vsName));
+                if (dladdr(pc, &info) == 0)
+                    {
+                    break;
+                    }
 
-             // trim off OS specific bits below coherence created threads
-             if (fTrim && vsName->endsWith(vsThreadRun))
-                 {
-                 break;
-                 }
+                String::View vsName = (info.dli_sname
+                        ? NativeABI::demangle(info.dli_sname)
+                        : (String::View) StringHelper::getEmptyString());
+
+                 haFrames->add(NativeStackElement::create(
+                    (info.dli_fname
+                        ? String::create(info.dli_fname)
+                        : StringHelper::getEmptyString()),
+                    vsName));
+
+                 // trim off OS specific bits below coherence created threads
+                 if (fTrim && vsName->endsWith(vsThreadRun))
+                     {
+                     break;
+                     }
+                }
             }
         }
 

@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_WINDOWS_BACKTRACE_HPP
 #define COH_WINDOWS_BACKTRACE_HPP
@@ -44,15 +44,25 @@ namespace
     */
     void initializeBacktrace()
         {
+        // COH-31048 - dbghelp symbol support uses a fair amount of memory; backtrace collection
+        //             can be disabled for environments where system memory is at a premium
+        bool fBackTrace = Boolean::parse(System::getProperty("coherence.backtrace.enabled", "true"));
+
+        if (!fBackTrace)
+            {
+            fBacktraceEnabled  = FALSE;
+            return;
+            }
+
         hKernel32Dll = LoadLibrary(TEXT("kernel32.dll"));
         if (hKernel32Dll != NULL)
             {
             pRtlCaptureContext = (RTLCAPTURECONTEXT) GetProcAddress(hKernel32Dll, TEXT("RtlCaptureContext"));
 
             if (pRtlCaptureContext != NULL)
-            {
-            fBacktraceEnabled = TRUE;
-            }
+                {
+                fBacktraceEnabled = TRUE;
+                }
             }
 
         if (!fBacktraceEnabled)
@@ -78,8 +88,8 @@ namespace
             {
             // stupid function wants a char* not const char*, can't trust
             // that it won't modify the string
-            size32_t cch    = vsPath->getOctets()->length;
-            char* achPath = new char[cch];
+            size32_t cch     = vsPath->getOctets()->length;
+            char*    achPath = new char[cch];
             strncpy_s(achPath, cch, vsPath->getCString(), cch);
             SymInitialize(GetCurrentProcess(), achPath, TRUE);
             delete[] achPath;
