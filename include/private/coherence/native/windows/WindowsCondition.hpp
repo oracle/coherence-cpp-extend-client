@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2024, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_WINDOWS_CONDITION_HPP
 #define COH_WINDOWS_CONDITION_HPP
@@ -28,7 +28,7 @@ using namespace coherence::native;
 * Windows implementation of Condition.
 *
 * This implementation utilizes Windows Events which are not subject to the
-* suprious wakeup problem.  This implementation however can produce spurious
+* spurious wakeup problem. This implementation however can produce spurious
 * wakeups, and users of Condition must account for them.
 *
 * @author 2007.12.10 mf
@@ -54,7 +54,7 @@ class COH_EXPORT WindowsCondition
             COH_ENSURE(m_eventEnd   != NULL);
 
             // TODO - REMOVE THIS STATEMENT
-            // test if it is an error to reset a unsignaled event
+            // test if it is an error to reset an unsignaled event
             // if it is we need to adjust some code
             COH_ENSURE(ResetEvent(m_eventBegin) != FALSE);
             }
@@ -101,7 +101,7 @@ class COH_EXPORT WindowsCondition
                         << nResult);
                 }
 
-            // Note: cleanup order intetionally identical to acquistion order
+            // Note: cleanup order intentionally identical to acquisition order
             if (atomicWaiters.adjust(-1) == m_cAllowed)
                 {
                 // all remaining threads are allowed to remain sleeping
@@ -144,7 +144,7 @@ class COH_EXPORT WindowsCondition
         /**
         * Notify a specific number of threads.
         *
-        * @param cThreads  the nubmer of threads to notify
+        * @param cThreads  the number of threads to notify
         */
         void notify(bool fNotifyAll)
             {
@@ -171,24 +171,24 @@ class COH_EXPORT WindowsCondition
                     // open by a thread timing out
                     COH_ENSURE(ResetEvent(eventEnd) != FALSE);
 
-                    // ensure that no thread timesout between these two lines
+                    // ensure that no thread timed out between these two lines
                     m_cAllowed = fNotifyAll ? 0 : cWaiters - 1;
                     int32_t cCurr = atomicWaiters.get();
 
-                    // validate that no thread timedout
+                    // validate that no thread timed out
                     if (cCurr == cWaiters)
                         {
-                        // no threads timedout
+                        // no threads timed out
                         break;
                         }
                     else if (cCurr == 0)
                         {
-                        // all waiting threads timedout
+                        // all waiting threads timed out
                         return;
                         }
                     else if (cCurr < cWaiters)
                         {
-                        // some but not all waiting threads timedout
+                        // some but not all waiting threads timed out
                         // try again
                         cWaiters = cCurr;
                         }
@@ -209,7 +209,7 @@ class COH_EXPORT WindowsCondition
                         WAIT_OBJECT_0);
 
                 // though likely already reset by the last thread to wake up
-                // there is a slight chance that all threads timedout just
+                // there is a slight chance that all threads timed out just
                 // before we did SetEvent, in which case they could have call
                 // ResetEvent before we did our SetEvent, and we want to ensure
                 // we leave the Event reset
