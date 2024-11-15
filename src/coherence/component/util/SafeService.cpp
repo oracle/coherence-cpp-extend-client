@@ -9,6 +9,8 @@
 #include "coherence/net/CacheFactory.hpp"
 #include "coherence/util/Service.hpp"
 
+#include "coherence/net/messaging/ConnectionException.hpp"
+
 #include "private/coherence/component/net/extend/RemoteCacheService.hpp"
 #include "private/coherence/component/net/extend/RemoteService.hpp"
 #include "private/coherence/component/util/Service.hpp"
@@ -19,6 +21,7 @@ COH_OPEN_NAMESPACE3(coherence,component,util)
 using coherence::component::net::extend::RemoteCacheService;
 using coherence::component::net::extend::RemoteService;
 using coherence::net::CacheFactory;
+using coherence::net::messaging::ConnectionException;
 using coherence::security::auth::Subject;
 using coherence::util::logging::Logger;
 
@@ -626,8 +629,17 @@ void SafeService::startService(ServiceType::Handle hService) const
         }
     catch (Exception::View e)
         {
-        COH_LOG("Unable to start service "
-                << getServiceName() << ": " << e, Logger::level_error);
+        String::View vsMessage = COH_TO_STRING("Error while starting service " << getServiceName() << " : ");
+        if (instanceof<RemoteService::View>(hService) && instanceof<ConnectionException::View>(e))
+            {
+            // COH-30321 - skip printing the stack trace as connection failures are common and the stack trace
+            // doesn't provide anything useful
+            COH_LOG(vsMessage << ": " << e, Logger::level_error);
+            }
+        else
+            {
+            COH_LOG(vsMessage << ": " << e->getStackTrace(), Logger::level_error);
+            }
         stopAfterFailedStart(hService);
         COH_THROW (e);
         }
