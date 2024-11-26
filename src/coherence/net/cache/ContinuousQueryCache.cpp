@@ -248,7 +248,8 @@ MapListener::View ContinuousQueryCache::getMapListener() const
 
 bool ContinuousQueryCache::isCacheValues() const
     {
-    return m_fCacheValues || isObserved();
+     // standard listener or non-null transformer override initial fCacheValue 
+    return m_fCacheValues || isObserved() || f_vTransformer != NULL;          
     }
 
 void ContinuousQueryCache::setCacheValues(bool fCacheValues)
@@ -332,11 +333,14 @@ ObservableMap::Handle ContinuousQueryCache::ensureInternalCache() const
     if (hMapLocal == NULL)
         {
         hMapLocal = m_hMapLocal = instantiateInternalCache();
-        if (m_fListeners)
+
+        MapListener::Handle hListener = m_hListener;
+        bool                fLite     = !isCacheValues();
+        if (hListener != NULL)
             {
             MapListener::Handle hListener = m_hListener;
             ensureEventQueue();
-            hMapLocal->addFilterListener(instantiateEventRouter(m_hListener, false));
+            hMapLocal->addFilterListener(instantiateEventRouter(m_hListener, fLite), NULL, fLite);
             }
         }
     return hMapLocal;
@@ -1584,8 +1588,8 @@ void ContinuousQueryCache::onInit()
     initialize(f_hSetKeys, instantiateKeySet());
     initialize(f_hSetEntries, instantiateEntrySet());
 
-    // was a listener passed at construction time?
-    m_fListeners = m_hListener != NULL;
+    // was a standard (non-lite) listener passed at construction time?
+    m_fListeners = m_hListener != NULL && isCacheValues();
 
     ensureInternalCache();
     ensureSynchronized(false);

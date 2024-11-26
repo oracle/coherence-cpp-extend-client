@@ -96,6 +96,40 @@ class ContinuousQueryCacheTest : public CxxTest::TestSuite
         TS_ASSERT(hCqc->isCacheValues());
         }
 
+        void testIsCacheValuesWithListener()
+            {
+            MockNamedCache::Handle hMockNamedCache = MockNamedCache::create();
+            MockMapListener::Handle hMockListener = MockMapListener::create();
+            Filter::Handle hFilter = DummyFilter::create();
+
+            //set expectations
+            hMockNamedCache->entrySet(hFilter);
+            hMockNamedCache->setMatcher(&matchAll);
+            hMockNamedCache->setObjectReturn(Collections::emptySet());
+
+            hMockNamedCache->keySet(hFilter);
+            hMockNamedCache->setMatcher(&matchAll);
+            hMockNamedCache->setObjectReturn(Collections::emptySet());
+
+            hMockNamedCache->entrySet(hFilter);
+            hMockNamedCache->setMatcher(&matchAll);
+            hMockNamedCache->setObjectReturn(Collections::emptySet());
+
+            hMockNamedCache->keySet(hFilter);
+            hMockNamedCache->setMatcher(&matchAll);
+            hMockNamedCache->setObjectReturn(Collections::emptySet());
+
+            //replay
+            hMockNamedCache->replay();
+
+            ContinuousQueryCache::Handle hCqc = ContinuousQueryCache::create(hMockNamedCache, hFilter, false, hMockListener);
+            TS_ASSERT(!hCqc->isCacheValues());
+
+            hCqc = ContinuousQueryCache::create(hMockNamedCache, hFilter, true, hMockListener);
+            TS_ASSERT(hCqc->isCacheValues());
+            }
+    
+
 
     void testSetCacheValues()
         {

@@ -72,7 +72,8 @@ class COH_EXPORT ContinuousQueryCache
         * @param vFilter       the Filter that defines the view
         * @param fCacheValues  pass true to cache both the keys and values of
         *                      the materialized view locally, or false to
-        *                      only cache the keys
+        *                      only cache the keys. Override of false described
+        *                      in isCacheValues()
         * @param hListener     an initial MapListener that will receive all
         *                      the events from the ContinuousQueryCache,
         *                      including those corresponding to its initial
@@ -80,6 +81,9 @@ class COH_EXPORT ContinuousQueryCache
         * @param vTransformer  the transformer that should be used to convert
         *                      values from the underlying cache before storing
         *                      them locally
+        * Note: When parameter fCacheValues is false, it is inferred that provided parameter
+        * listener is a lite listener as described by fLite parameter of
+        * addMapListener(MapListener, Filter, boolean).
         */
         ContinuousQueryCache(NamedCache::Handle hCache,
                 Filter::View vFilter, bool fCacheValues = false,
@@ -101,7 +105,8 @@ class COH_EXPORT ContinuousQueryCache
         * @param vFilter         the Filter that defines the view
         * @param fCacheValues    pass true to cache both the keys and values of
         *                        the materialized view locally, or false to
-        *                        only cache the keys
+        *                        only cache the keys. Override of false described
+        *                        in isCacheValues()
         * @param hListener       an initial MapListener that will receive all
         *                        the events from the ContinuousQueryCache,
         *                        including those corresponding to its initial
@@ -109,6 +114,9 @@ class COH_EXPORT ContinuousQueryCache
         * @param vTransformer    the transformer that should be used to convert
         *                        values from the underlying cache before storing
         *                        them locally
+        * Note: When parameter fCacheValues is false, it is inferred that provided parameter
+        * listener is a lite listener as described by fLite parameter of
+        * addMapListener(MapListener, Filter, boolean).
         */
         ContinuousQueryCache(Supplier::View vCacheSupplier,
                 Filter::View vFilter, bool fCacheValues,
@@ -169,6 +177,12 @@ class COH_EXPORT ContinuousQueryCache
         *
         * @return true if this object caches values locally, and false if it
         *        relies on the underlying NamedCache
+        * 
+        * Note: if addMapListener(MapListener, Filter, boolean) adds a standard 
+        * (non-lite) listener or a filter to this ObservableMap, cache values are 
+        * always maintained locally. The locally cached values are used to filter events
+        * and to supply the old and new values for the events that it raises.
+        * Additionally, a non-null transformer infers caches values being stored locally.
         */
         virtual bool isCacheValues() const;
 
@@ -182,7 +196,8 @@ class COH_EXPORT ContinuousQueryCache
         * cached data and rely on the underlying NamedCache.
         *
         * @param fCacheValues pass true to enable local caching, or false to
-        *                     disable it
+        *                     disable it.  Override of false described 
+        *                     in isCacheValues()
         */
         virtual void setCacheValues(bool fCacheValues);
 

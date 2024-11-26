@@ -122,6 +122,44 @@ class ContinuousQueryCacheTest : public CxxTest::TestSuite
                 }
         };
 
+    // validating lite cache listener for CQC instance
+    class ValidateLiteMapListener : public class_spec<ValidateLiteMapListener,
+            extends<Object>, implements<MapListener> >
+        {
+        friend class factory<ValidateLiteMapListener>;
+
+        protected:
+            ValidateLiteMapListener(bool fLite)
+                {
+                m_fLite = fLite;    
+                }
+
+        public:
+            void entryInserted(MapEvent::View vEvt)
+                {
+                TS_ASSERT(m_fLite ? vEvt->getNewValue() == NULL : vEvt->getNewValue() != NULL);
+                }
+
+            void entryUpdated(MapEvent::View vEvt)
+                {
+                TS_ASSERT(m_fLite ? vEvt->getNewValue() == NULL : vEvt->getNewValue() != NULL);
+                TS_ASSERT(m_fLite ? vEvt->getOldValue() == NULL : vEvt->getOldValue() != NULL);
+                }
+
+            void entryDeleted(MapEvent::View vEvt)
+                {
+                TS_ASSERT(m_fLite ? vEvt->getOldValue() == NULL : vEvt->getOldValue() != NULL);    
+                }
+
+         // ----- data members -----------------------------------------------
+
+        protected:
+          /**
+            * If true, validate a lite MapListener, get old and new value are NULL.
+            */
+            bool m_fLite;    
+        };    
+
     // ----- local class: TestCQCListener -----------------------------------
 
     /**
@@ -510,7 +548,7 @@ class ContinuousQueryCacheTest : public CxxTest::TestSuite
 
             // create CQC
             ContinuousQueryCache::Handle hCqc = ContinuousQueryCache::create(
-                  hCache, AlwaysFilter::create(), false, hMockListener);
+                  hCache, AlwaysFilter::create(), true, hMockListener);
 
             Object::View vKey   = String::create("key1");
             Object::View vVal   = String::create("val1");
@@ -1888,6 +1926,49 @@ class ContinuousQueryCacheTest : public CxxTest::TestSuite
             ContinuousQueryCache::Handle hCqc = ContinuousQueryCache::create(
                 hCache, AlwaysFilter::create(), false, SampleMapListener::create());
             hCache->put(String::create("Key6270"), String::create("Value6270"));
+            hCqc->release();
+            }
+
+        /*
+        * Test for COH-31325 
+        */
+        void testCOH31325()
+            {                        
+            NamedCache::Handle hCache = ensureCleanCache("TestCache");
+
+            // test fCacheValues of false and lite map listener
+            ContinuousQueryCache::Handle hCqc = ContinuousQueryCache::create(
+                hCache, AlwaysFilter::create(), false, ValidateLiteMapListener::create(true));
+            TS_ASSERT(!hCqc->isCacheValues());
+            hCache->put(String::create("Key31325"), String::create("Value31325"));
+            hCache->put(String::create("Key31325"), String::create("UpdateValue31325"));
+            hCache->remove(String::create("Key31325"));
+            TS_ASSERT(!hCqc->isCacheValues());
+            hCqc->release();
+
+            // test fCacheValues of false initially with map listener, first non-lite listener converts isCacheValues to true
+            hCqc = ContinuousQueryCache::create(
+                hCache, AlwaysFilter::create(), false, SampleMapListener::create());
+            TS_ASSERT(!hCqc->isCacheValues());
+            hCache->put(String::create("Key31325"), String::create("Value31325"));
+            hCache->put(String::create("Key31325"), String::create("UpdateValue31325"));
+            hCache->remove(String::create("Key31325"));
+            TS_ASSERT(!hCqc->isCacheValues());
+            // add a standard listener and verify isCacheValues after
+            hCqc->addFilterListener(ValidateLiteMapListener::create(false), AlwaysFilter::create(), false);
+            hCache->put(String::create("Key31325"), String::create("SecondUpdateValue31325"));
+            TS_ASSERT(hCqc->isCacheValues());
+            hCqc->release();
+
+            // validate standard listener when fCacheValues is true
+            hCache = ensureCleanCache("TestCache");
+            hCqc = ContinuousQueryCache::create(
+                hCache, AlwaysFilter::create(), true, ValidateLiteMapListener::create(false));
+            TS_ASSERT(hCqc->isCacheValues());
+            hCache->put(String::create("Key31325"), String::create("Value31325"));
+            hCache->put(String::create("Key31325"), String::create("UpdateValue31325"));
+            hCache->remove(String::create("Key31325"));
+            TS_ASSERT(hCqc->isCacheValues());
             hCqc->release();
             }
 

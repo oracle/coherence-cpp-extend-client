@@ -213,7 +213,7 @@ class CQCProxyTest : public CxxTest::TestSuite
 
             // instantiate the CQC, will start the test running.
             ContinuousQueryCache::Handle hCQC =
-                    ContinuousQueryCache::create(hTestCache, AlwaysFilter::create(), false, hListener);
+                    ContinuousQueryCache::create(hTestCache, AlwaysFilter::create(), true, hListener);
 
             // add member listener to inner cache to receive memberLeft
             // event; intermittently, the "get" which restarts the
