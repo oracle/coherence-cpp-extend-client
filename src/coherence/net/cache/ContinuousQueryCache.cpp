@@ -338,9 +338,8 @@ ObservableMap::Handle ContinuousQueryCache::ensureInternalCache() const
         bool                fLite     = !isCacheValues();
         if (hListener != NULL)
             {
-            MapListener::Handle hListener = m_hListener;
             ensureEventQueue();
-            hMapLocal->addFilterListener(instantiateEventRouter(m_hListener, fLite), NULL, fLite);
+            hMapLocal->addFilterListener(instantiateEventRouter(hListener, fLite), NULL, fLite);
             }
         }
     return hMapLocal;
