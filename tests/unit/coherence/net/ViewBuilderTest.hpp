@@ -154,6 +154,12 @@ class ViewBuilderTest : public CxxTest::TestSuite
             hCache->entrySet((Filter::View) NULL);
             hCache->lastExpectation()->ignoreArguments();
             hCache->setObjectReturn(HashSet::create());
+            hCache->invokeAll((Filter::View) NULL, (InvocableMap::EntryProcessor::Handle) NULL);
+            hCache->lastExpectation()->ignoreArguments();
+            hCache->setObjectReturn(HashMap::create());
+            hCache->getAll((Collection::View) NULL);                        
+            hCache->lastExpectation()->ignoreArguments();
+            hCache->setObjectReturn(HashSet::create());
 
             //replay
             hCache->replay();
