@@ -1,6 +1,6 @@
 <!--
 
-  Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+  Copyright (c) 2000, 2025, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
   https://oss.oracle.com/licenses/upl.
@@ -22,7 +22,7 @@
 1. [CLI Hello Coherence Example](#cli-hello)
 1. [Programmatic Hello Coherence Example](#prog-hello)
 1. [Testing](#testing)
-1. [Documentation](https://docs.oracle.com/en/middleware/fusion-middleware/coherence/12.2.1.4/index.html)
+1. [Documentation](https://docs.oracle.com/en/middleware/fusion-middleware/coherence/14.1.2/index.html)
 1. [Contributing](CONTRIBUTING.md)
 
 # <a name="intro"></a>Introduction to Coherence
