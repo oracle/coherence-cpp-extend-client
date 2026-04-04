@@ -182,7 +182,11 @@ BundlingNamedCache::GetBundler::GetBundler(BundlingNamedCache::Handle hBundlingN
 
 Map::View BundlingNamedCache::GetBundler::bundle(Collection::View vColKeys)
     {
-    return getBundlingNamedCache()->BundlingNamedCache::super::getAll(vColKeys);
+    Map::View vResults = getBundlingNamedCache()->BundlingNamedCache::super::getAll(vColKeys);
+    // COH-31796: bundled follower threads share this map; concurrent reads must be supported
+    return vResults == NULL
+            ? vResults
+            : Collections::synchronizedMap(vResults);
     }
 
 Object::Holder BundlingNamedCache::GetBundler::unbundle(Object::View vKey) const
