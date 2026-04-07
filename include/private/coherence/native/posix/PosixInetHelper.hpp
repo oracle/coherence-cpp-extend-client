@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_POSIX_INET_HELPER_HPP
 #define COH_POSIX_INET_HELPER_HPP
@@ -29,6 +29,7 @@
     #define COH_ENSURE_SOCKET_INIT() \
         static const bool init_once = (coherence::native::windows::WinSockInitializer::ensure(), true)
 #else
+    #include <errno.h>
     #include <limits.h>
     #include <netdb.h>
     #include <netinet/in.h>
@@ -146,9 +147,12 @@ class COH_EXPORT PosixInetHelper
 
             while (true)
                 {
-                int nResult = getaddrinfo(vsName->getCString(),
+                int  nResult            = getaddrinfo(vsName->getCString(),
                         (nPort ? sService.str().c_str() : NULL), &hints,
                         &result.pAddrInfo);
+                int  nErrno             = errno;
+                bool fUnresolvedAddress = false;
+
                 switch (nResult)
                     {
                     case 0: // success
@@ -162,40 +166,62 @@ class COH_EXPORT PosixInetHelper
                     case EAI_AGAIN:
                     case EAI_FAIL:
                     case EAI_SERVICE:
-                        // unknown host, or service level failure, not a hard error
-                        // see if we can refine the search
-                        if (NULL != vsName && (vsName->equals("localhost") ||
-                            vsName->equals(getLocalHostName())))
+                        fUnresolvedAddress = true;
+                        break;
+#if defined(EAI_SYSTEM)
+                    case EAI_SYSTEM:
+                        // On Oracle Linux 8 x86, unresolved or malformed host
+                        // lookups may surface as EAI_SYSTEM/EBUSY instead of
+                        // EAI_NONAME. Treat that combination as an unresolved
+                        // address so callers still receive UnknownHostException.
+                        if (nPort == 0 && nErrno == EBUSY)
                             {
-                            COH_LOG("Unable to resolve local address \""
-                                    << vsName << "\"; error[" << nResult
-                                    << "] " << gai_strerror(nResult)
-                                    << "; using loopback", 3);
-                            hints.ai_flags |= AI_NUMERICHOST;
-                            vsName          = "127.0.0.1";
+                            fUnresolvedAddress = true;
+                            break;
                             }
-                        else if ((hints.ai_flags & AI_NUMERICHOST) == 0)
-                            {
-                            // try as a numeric host, though we could scan the
-                            // string and check, getaddrinfo will do this anyway
-                            hints.ai_flags |= AI_NUMERICHOST;
-                            }
-                        else
-                            {
-                            // no refinements available
-                            COH_LOG("Unable to resolve address \""
-                                    << vsName << "\"; error[" << nResult << "] "
-                                    << gai_strerror(nResult), 6);
-                            return;
-                            }
-                        break; // try again
+                        // fall-through
+#endif
 
                     default:
                         // unexpected error
                         COH_THROW_STREAM (IllegalStateException,
                                 "unexpected result from getaddrinfo(\"" <<
                                 vsName << "\", ...); error[" << nResult <<
-                                "] " << gai_strerror(nResult));
+                                "] " << gai_strerror(nResult) <<
+                                "; errno[" << nErrno << "] " <<
+                                strerror(nErrno) << "; family=" <<
+                                hints.ai_family << "; flags=" <<
+                                hints.ai_flags << "; port=" << nPort);
+                    }
+
+                if (fUnresolvedAddress)
+                    {
+                    // unknown host, or service level failure, not a hard error
+                    // see if we can refine the search
+                    if (NULL != vsName && (vsName->equals("localhost") ||
+                        vsName->equals(getLocalHostName())))
+                        {
+                        COH_LOG("Unable to resolve local address \""
+                                << vsName << "\"; error[" << nResult
+                                << "] " << gai_strerror(nResult)
+                                << "; using loopback", 3);
+                        hints.ai_flags |= AI_NUMERICHOST;
+                        vsName          = "127.0.0.1";
+                        }
+                    else if ((hints.ai_flags & AI_NUMERICHOST) == 0)
+                        {
+                        // try as a numeric host, though we could scan the
+                        // string and check, getaddrinfo will do this anyway
+                        hints.ai_flags |= AI_NUMERICHOST;
+                        }
+                    else
+                        {
+                        // no refinements available
+                        COH_LOG("Unable to resolve address \""
+                                << vsName << "\"; error[" << nResult << "] "
+                                << gai_strerror(nResult), 6);
+                        return;
+                        }
                     }
                 }
             }
