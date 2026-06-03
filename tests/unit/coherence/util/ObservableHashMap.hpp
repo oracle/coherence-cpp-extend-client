@@ -1,22 +1,60 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "cxxtest/TestSuite.h"
 #include "coherence/lang.ns"
 
+#include "coherence/net/cache/ContinuousQueryCache.hpp"
+
 #include "coherence/util/MapListener.hpp"
-
-
-#include "private/coherence/util/ObservableHashMap.hpp"
+#include "coherence/util/ObservableHashMap.hpp"
 
 #include "common/TestListener.hpp"
+
+using coherence::net::cache::ContinuousQueryCache;
+using coherence::util::ObservableHashMap;
+
+class SizedInternalMapContinuousQueryCache
+    : public class_spec<SizedInternalMapContinuousQueryCache,
+        extends<ContinuousQueryCache> >
+    {
+    friend class factory<SizedInternalMapContinuousQueryCache>;
+
+    protected:
+        SizedInternalMapContinuousQueryCache(
+                coherence::net::NamedCache::Handle hCache,
+                coherence::util::Filter::View vFilter)
+            : super(hCache, vFilter, true,
+                    (coherence::util::MapListener::Handle) NULL,
+                    (coherence::util::ValueExtractor::View) NULL)
+            {
+            }
+
+        virtual coherence::util::ObservableMap::Handle
+                instantiateInternalCache() const
+            {
+            return coherence::util::ObservableHashMap::create(
+                    1000003, 1.0F, 3.0F);
+            }
+    };
 
 class ObservableHashMapSuite : public CxxTest::TestSuite
     {
     public:
+        void testSizedCreate()
+            {
+            ObservableHashMap::Handle hMap =
+                    ObservableHashMap::create(1000003, 1.0F, 3.0F);
+            Integer32::Handle hVal = Integer32::create(1);
+
+            hMap->put(hVal, hVal);
+
+            TS_ASSERT_EQUALS(hMap->get(hVal), hVal);
+            }
+
         void testInsert()
             {
             ObservableHashMap::Handle hMap = ObservableHashMap::create();

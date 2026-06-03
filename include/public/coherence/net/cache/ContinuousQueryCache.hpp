@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #ifndef COH_CONTINUOUS_QUERY_CACHE_HPP
 #define COH_CONTINUOUS_QUERY_CACHE_HPP
@@ -275,6 +275,14 @@ class COH_EXPORT ContinuousQueryCache
         *         view of the ContinuousQueryCache
         */
         virtual ObservableMap::Handle instantiateInternalCache() const;
+
+        /**
+        * Return the initial bucket count to use when the default internal
+        * cache is instantiated, or zero to use the map default.
+        *
+        * @return the default internal cache initial bucket count
+        */
+        virtual size32_t getInternalCacheInitialBuckets() const;
 
         /**
         * Obtain a reference to the internal cache. The internal cache
@@ -1025,6 +1033,12 @@ class COH_EXPORT ContinuousQueryCache
         * m_fCacheValues is true) the corresponding values as well.
         */
         mutable MemberHandle<ObservableMap> m_hMapLocal;
+
+        /**
+        * Initial bucket count to use when the default internal cache is
+        * instantiated.
+        */
+        mutable size32_t m_cInternalCacheInitialBuckets;
 
         /**
         * State of the ContinousQueryCache. One of the STATE_* enums.

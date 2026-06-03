@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
  * https://oss.oracle.com/licenses/upl.
@@ -21,6 +21,7 @@
 #include "coherence/util/MapListenerSupport.hpp"
 #include "coherence/util/MapTriggerListener.hpp"
 #include "coherence/util/Muterator.hpp"
+#include "coherence/util/ObservableHashMap.hpp"
 #include "coherence/util/ReadOnlyArrayList.hpp"
 #include "coherence/util/SafeHashMap.hpp"
 #include "coherence/util/SimpleMapIndex.hpp"
@@ -41,8 +42,9 @@
 #include "private/coherence/component/util/QueueProcessor.hpp"
 #include "private/coherence/component/util/SafeNamedCache.hpp"
 
+#include "private/coherence/lang/AssociativeArray.hpp"
+
 #include "private/coherence/util/InvocableMapHelper.hpp"
-#include "private/coherence/util/ObservableHashMap.hpp"
 #include "private/coherence/util/SimpleMapEntry.hpp"
 #include "private/coherence/util/logging/Logger.hpp"
 
@@ -138,6 +140,26 @@ class COH_EXPORT CacheSupplier
         FinalHandle<NamedCache> f_hNamedCache;
     };
 
+size32_t calculateInternalCacheInitialBuckets(size32_t cEntries)
+    {
+    size32_t cInitialBuckets;
+    if (cEntries >= SafeHashMap::biggest_modulo)
+        {
+        cInitialBuckets = SafeHashMap::biggest_modulo;
+        }
+    else
+        {
+        size32_t cHeadroom    = cEntries / 5;
+        size32_t cMaxHeadroom = SafeHashMap::biggest_modulo - cEntries;
+        cInitialBuckets = cEntries
+                + (cHeadroom < cMaxHeadroom ? cHeadroom : cMaxHeadroom);
+        }
+    cInitialBuckets = cInitialBuckets > SafeHashMap::default_initialsize
+            ? cInitialBuckets : SafeHashMap::default_initialsize;
+    size32_t cPrime = getNextPrime(cInitialBuckets); // see AssociativeArray.hpp
+    return cPrime == 0 ? cInitialBuckets : cPrime;
+    }
+
 COH_CLOSE_NAMESPACE_ANON
 
 // TODO REVIEW MF: Evaluate use of so many mutables, it is likely that
@@ -167,6 +189,7 @@ ContinuousQueryCache::ContinuousQueryCache(NamedCache::Handle hCache,
           m_cReconnectMillis(0),
           m_ldtConnectionTimestamp(self(), 0, /*fMutable*/ true),
           m_hMapLocal(self(), (ObservableMap::Handle) NULL, /*fMutable*/ true),
+          m_cInternalCacheInitialBuckets(0),
           m_nState(self(), state_disconnected, /*fMutable*/ true),
           m_hMapSyncReq(self(), (Map::Handle) NULL, /*fMutable*/ true),
           m_hTaskQueue(self(), NULL, /*fMutable*/ true),
@@ -198,6 +221,7 @@ ContinuousQueryCache::ContinuousQueryCache(Supplier::View vCacheSupplier,
           m_cReconnectMillis(0),
           m_ldtConnectionTimestamp(self(), 0, /*fMutable*/ true),
           m_hMapLocal(self(), (ObservableMap::Handle) NULL, /*fMutable*/ true),
+          m_cInternalCacheInitialBuckets(0),
           m_nState(self(), state_disconnected, /*fMutable*/ true),
           m_hMapSyncReq(self(), (Map::Handle) NULL, /*fMutable*/ true),
           m_hTaskQueue(self(), NULL, true),
@@ -324,7 +348,15 @@ void ContinuousQueryCache::setCacheNameSupplier(Supplier::View hCacheNameSupplie
 
 ObservableMap::Handle ContinuousQueryCache::instantiateInternalCache() const
     {
-    return ObservableHashMap::create();
+    size32_t cInitialBuckets = getInternalCacheInitialBuckets();
+    return cInitialBuckets == 0
+            ? ObservableHashMap::create()
+            : ObservableHashMap::create(cInitialBuckets, 1.0F, 3.0F);
+    }
+
+size32_t ContinuousQueryCache::getInternalCacheInitialBuckets() const
+    {
+    return m_cInternalCacheInitialBuckets;
     }
 
 ObservableMap::Handle ContinuousQueryCache::ensureInternalCache() const
@@ -1120,7 +1152,6 @@ void ContinuousQueryCache::configureSynchronization(bool fReload) const
                     }
             
                 // update the local query image
-                hMapLocal = ensureInternalCache();
                 if (fFirstTime || fReload)
                     {
                     // populate the internal cache
@@ -1131,6 +1162,13 @@ void ContinuousQueryCache::configureSynchronization(bool fReload) const
                             : hCache->invokeAll(vFilter,
                                 ExtractorProcessor::create(
                                     f_vTransformer))->entrySet());
+
+                        if (m_hMapLocal == NULL)
+                            {
+                            m_cInternalCacheInitialBuckets =
+                                    calculateInternalCacheInitialBuckets(vSet->size());
+                            }
+                        hMapLocal = ensureInternalCache();
             
                         // first remove anything that is not in the query
                         if (!hMapLocal->isEmpty())
@@ -1158,6 +1196,13 @@ void ContinuousQueryCache::configureSynchronization(bool fReload) const
                         {
                         // first remove the keys that are not in the query
                         Set::View vSetQueryKeys = hCache->keySet(vFilter);
+                        if (m_hMapLocal == NULL)
+                            {
+                            m_cInternalCacheInitialBuckets =
+                                    calculateInternalCacheInitialBuckets(vSetQueryKeys->size());
+                            }
+                        hMapLocal = ensureInternalCache();
+
                         if (!hMapLocal->isEmpty())
                             {
                             hMapLocal->keySet()->retainAll(vSetQueryKeys);
@@ -1174,6 +1219,7 @@ void ContinuousQueryCache::configureSynchronization(bool fReload) const
                 else
                     {
                     // not the first time; internal cache is already populated
+                    hMapLocal = ensureInternalCache();
                     if (fCacheValues)
                         {
                         // used to cache only keys, now caching values too
@@ -1590,7 +1636,6 @@ void ContinuousQueryCache::onInit()
     // was a standard (non-lite) listener passed at construction time?
     m_fListeners = m_hListener != NULL && isCacheValues();
 
-    ensureInternalCache();
     ensureSynchronized(false);
     }
 
