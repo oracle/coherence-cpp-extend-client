@@ -33,6 +33,78 @@ using coherence::util::SimpleMapEntry;
 using coherence::util::ValueExtractor;
 using coherence::util::filter::AlwaysFilter;
 
+class SizingContinuousQueryCache
+    : public class_spec<SizingContinuousQueryCache,
+        extends<ContinuousQueryCache> >
+    {
+    friend class factory<SizingContinuousQueryCache>;
+
+    protected:
+        SizingContinuousQueryCache(NamedCache::Handle hCache,
+                Filter::View vFilter, bool fCacheValues)
+            : super(hCache, vFilter, fCacheValues,
+                    (MapListener::Handle) NULL,
+                    (ValueExtractor::View) NULL),
+              m_cObservedInitialBuckets(0),
+              m_fInstantiateCalled(false)
+            {
+            }
+
+        virtual ObservableMap::Handle instantiateInternalCache() const
+            {
+            m_cObservedInitialBuckets = getInternalCacheInitialBuckets();
+            m_fInstantiateCalled      = true;
+            return super::instantiateInternalCache();
+            }
+
+    public:
+        size32_t getObservedInitialBuckets() const
+            {
+            return m_cObservedInitialBuckets;
+            }
+
+        bool isInstantiateCalled() const
+            {
+            return m_fInstantiateCalled;
+            }
+
+    protected:
+        mutable size32_t m_cObservedInitialBuckets;
+        mutable bool     m_fInstantiateCalled;
+    };
+
+class OverrideInternalMapContinuousQueryCache
+    : public class_spec<OverrideInternalMapContinuousQueryCache,
+        extends<ContinuousQueryCache> >
+    {
+    friend class factory<OverrideInternalMapContinuousQueryCache>;
+
+    protected:
+        OverrideInternalMapContinuousQueryCache(NamedCache::Handle hCache,
+                Filter::View vFilter, bool fCacheValues)
+            : super(hCache, vFilter, fCacheValues,
+                    (MapListener::Handle) NULL,
+                    (ValueExtractor::View) NULL),
+              m_fInstantiateCalled(false)
+            {
+            }
+
+        virtual ObservableMap::Handle instantiateInternalCache() const
+            {
+            m_fInstantiateCalled = true;
+            return ObservableHashMap::create(3, 1.0F, 3.0F);
+            }
+
+    public:
+        bool isInstantiateCalled() const
+            {
+            return m_fInstantiateCalled;
+            }
+
+    protected:
+        mutable bool m_fInstantiateCalled;
+    };
+
 namespace
     {
     bool matchAll(ArrayList::View /*vExpected*/, ArrayList::View /*vActual*/)
@@ -61,78 +133,6 @@ namespace
             }
         return hSet;
         }
-
-    class SizingContinuousQueryCache
-        : public class_spec<SizingContinuousQueryCache,
-            extends<ContinuousQueryCache> >
-        {
-        friend class factory<SizingContinuousQueryCache>;
-
-        protected:
-            SizingContinuousQueryCache(NamedCache::Handle hCache,
-                    Filter::View vFilter, bool fCacheValues)
-                : super(hCache, vFilter, fCacheValues,
-                        (MapListener::Handle) NULL,
-                        (ValueExtractor::View) NULL),
-                  m_cObservedInitialBuckets(0),
-                  m_fInstantiateCalled(false)
-                {
-                }
-
-            virtual ObservableMap::Handle instantiateInternalCache() const
-                {
-                m_cObservedInitialBuckets = getInternalCacheInitialBuckets();
-                m_fInstantiateCalled      = true;
-                return super::instantiateInternalCache();
-                }
-
-        public:
-            size32_t getObservedInitialBuckets() const
-                {
-                return m_cObservedInitialBuckets;
-                }
-
-            bool isInstantiateCalled() const
-                {
-                return m_fInstantiateCalled;
-                }
-
-        protected:
-            mutable size32_t m_cObservedInitialBuckets;
-            mutable bool     m_fInstantiateCalled;
-        };
-
-    class OverrideInternalMapContinuousQueryCache
-        : public class_spec<OverrideInternalMapContinuousQueryCache,
-            extends<ContinuousQueryCache> >
-        {
-        friend class factory<OverrideInternalMapContinuousQueryCache>;
-
-        protected:
-            OverrideInternalMapContinuousQueryCache(NamedCache::Handle hCache,
-                    Filter::View vFilter, bool fCacheValues)
-                : super(hCache, vFilter, fCacheValues,
-                        (MapListener::Handle) NULL,
-                        (ValueExtractor::View) NULL),
-                  m_fInstantiateCalled(false)
-                {
-                }
-
-            virtual ObservableMap::Handle instantiateInternalCache() const
-                {
-                m_fInstantiateCalled = true;
-                return ObservableHashMap::create(3, 1.0F, 3.0F);
-                }
-
-        public:
-            bool isInstantiateCalled() const
-                {
-                return m_fInstantiateCalled;
-                }
-
-        protected:
-            mutable bool m_fInstantiateCalled;
-        };
     }
 
 
@@ -435,5 +435,4 @@ class ContinuousQueryCacheTest : public CxxTest::TestSuite
         }
 
     };
-
 
