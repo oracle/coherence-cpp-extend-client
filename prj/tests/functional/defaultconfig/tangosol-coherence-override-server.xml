@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2000, 2026, Oracle and/or its affiliates.
+
+  Licensed under the Universal Permissive License v 1.0 as shown at
+  https://oss.oracle.com/licenses/upl.
+-->
+
+<coherence xml-override="test.override">
+  <cluster-config>
+    <unicast-listener>
+      <well-known-addresses>
+        <socket-address id="1">
+          <address system-property="tangosol.coherence.wka">127.0.0.1</address>
+        </socket-address>
+      </well-known-addresses>
+
+      <address system-property="tangosol.coherence.localhost">127.0.0.1</address>
+    </unicast-listener>
+
+    <multicast-listener>
+      <time-to-live system-property="tangosol.coherence.ttl">0</time-to-live>
+    </multicast-listener>
+  </cluster-config>
+
+  <security-config>
+    <identity-asserter>
+      <class-name>coherence.tests.SubjectPassthroughIdentityAsserter</class-name>
+    </identity-asserter>
+    <subject-scope>true</subject-scope>
+  </security-config>
+</coherence>
