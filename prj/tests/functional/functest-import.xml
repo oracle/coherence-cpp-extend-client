@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <!--
-  Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+  Copyright (c) 2000, 2026, Oracle and/or its affiliates.
 
   Licensed under the Universal Permissive License v 1.0 as shown at
-  http://oss.oracle.com/licenses/upl.
+  https://oss.oracle.com/licenses/upl.
 -->
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 <!-- ANT build file that contains common build properties, paths, task     -->
@@ -34,6 +34,7 @@
   <property name="server.config"         value="${main.dir}/prj/tests/functional/defaultconfig/server-cache-config.xml"/>
   <property name="pof.config"            value="${main.dir}/prj/tests/functional/defaultconfig/server-pof-config.xml"/>
   <property name="override.config"       value="${main.dir}/prj/tests/functional/defaultconfig/tangosol-coherence-override.xml"/>
+  <property name="server.override.config" value="${main.dir}/prj/tests/functional/defaultconfig/tangosol-coherence-override-server.xml"/>
   <property name="client.config"         value="${main.dir}/prj/tests/functional/defaultconfig/extend-cache-config.xml"/>
   <property name="ClusterControl.config" value="${main.dir}/prj/tests/functional/defaultconfig/cluster-control-cache-config.xml"/>
   <property name="server.log.name"       value="${main.dir}/prj/FuncTestServer.log"/>
@@ -70,7 +71,7 @@
       </classpath>
       <sysproperty key="tangosol.coherence.cacheconfig" value="${server.config}"/>
       <sysproperty key="coherence.cluster" value="${cluster.name}"/>
-      <sysproperty key="tangosol.coherence.override" value="${override.config}"/>
+      <sysproperty key="tangosol.coherence.override" value="${server.override.config}"/>
       <sysproperty key="tangosol.coherence.log" value="${log.name}"/>
       <sysproperty key="tangosol.coherence.log.level" value="${server.log.level}"/>
       <sysproperty key="tangosol.coherence.management" value="all"/>
