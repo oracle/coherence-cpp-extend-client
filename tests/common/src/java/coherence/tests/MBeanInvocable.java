@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 package coherence.tests;
 
@@ -16,7 +16,7 @@ import com.tangosol.net.Cluster;
 import com.tangosol.net.Invocable;
 import com.tangosol.net.InvocationService;
 
-import com.tangosol.net.management.MBeanHelper;
+import com.tangosol.net.management.MBeanServerProxy;
 import com.tangosol.net.management.Registry;
 
 import com.tangosol.util.Base;
@@ -72,30 +72,17 @@ public class MBeanInvocable
             Cluster cluster   = CacheFactory.getCluster();
             Registry registry = cluster.getManagement();
             assert registry != null;
-            boolean testFail = true;
-            
-            MBeanServer server = MBeanHelper.findMBeanServer();
+
             try
                 {
-                Set set = server.queryMBeans(new ObjectName("Coherence:*"), null);
-                if (set.size() <= 0)
-                    {
-                    Base.log("DBG: MbeanInvocable.run(); got set of MBeans, count: "+set.size());
-                    }
-                for (Iterator iter = set.iterator(); iter.hasNext();)
-                    {
-                    ObjectInstance instance   = (ObjectInstance) iter.next();
-                    ObjectName     objectName = instance.getObjectName();
-                    if (objectName.toString().indexOf("type=Connection,") > 0)
-                        {
-                        setValue(server.getAttribute(objectName, "Member").toString());
-                        testFail = false;
-                        break;
-                        }
-                    }
-                if (testFail)
+                String sValue = getConnectionMember(registry);
+                if (sValue == null)
                     {
                     Base.log("DBG: MBeanInvocable.run(); test failed to find Coherence Connection MBean");
+                    }
+                else
+                    {
+                    setValue(sValue);
                     }
                 }
             catch (Exception e)
@@ -111,6 +98,77 @@ public class MBeanInvocable
     public Object getResult()
         {
         return m_sValue;
+        }
+
+    /**
+    * Return the Member attribute from the local ConnectionMBean.
+    *
+    * @param registry  the cluster management registry
+    *
+    * @return the Member attribute value, or null if no ConnectionMBean is found
+    */
+    protected String getConnectionMember(Registry registry)
+        {
+        MBeanServerProxy proxy    = registry.getMBeanServerProxy();
+        String           sName    = registry.ensureGlobalName(Registry.CONNECTION_TYPE);
+        String           sDomain  = registry.getDomainName();
+        String           sPattern = (sName.indexOf(':') < 0
+                ? (sDomain == null || sDomain.length() == 0 ? "Coherence" : sDomain) + ':' + sName
+                : sName) + ",*";
+
+        for (int i = 0; i < 40; ++i)
+            {
+            String sValue = proxy.execute(server -> getConnectionMember(server, sPattern));
+            if (sValue != null)
+                {
+                return sValue;
+                }
+
+            Base.sleep(250L);
+            }
+
+        Base.log("DBG: MBeanInvocable.run(); failed to find Coherence Connection MBean, pattern: " + sPattern);
+        return null;
+        }
+
+    /**
+    * Return the Member attribute from the local ConnectionMBean.
+    *
+    * @param server    the MBeanServer
+    * @param sPattern  the ConnectionMBean name pattern
+    *
+    * @return the Member attribute value, or null if no ConnectionMBean is found
+    */
+    protected static String getConnectionMember(MBeanServer server, String sPattern)
+        {
+        try
+            {
+            Set<ObjectInstance> setBeans = server.queryMBeans(new ObjectName(sPattern), null);
+            for (Iterator<ObjectInstance> iter = setBeans.iterator(); iter.hasNext();)
+                {
+                ObjectName objectName = iter.next().getObjectName();
+                try
+                    {
+                    Object oValue = server.getAttribute(objectName, "Member");
+                    if (oValue != null)
+                        {
+                        Base.log("DBG: MBeanInvocable.run(); found Coherence Connection MBean " + objectName);
+                        return oValue.toString();
+                        }
+                    }
+                catch (Exception e)
+                    {
+                    Base.log("DBG: MBeanInvocable.run(); ignored unavailable Coherence Connection MBean "
+                            + objectName + ": " + e);
+                    }
+                }
+            }
+        catch (Exception e)
+            {
+            throw Base.ensureRuntimeException(e);
+            }
+
+        return null;
         }
         
 
