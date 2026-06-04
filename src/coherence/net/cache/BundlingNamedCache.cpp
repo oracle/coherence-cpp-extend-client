@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2000, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown at
- * http://oss.oracle.com/licenses/upl.
+ * https://oss.oracle.com/licenses/upl.
  */
 #include "coherence/net/cache/BundlingNamedCache.hpp"
 
@@ -182,7 +182,11 @@ BundlingNamedCache::GetBundler::GetBundler(BundlingNamedCache::Handle hBundlingN
 
 Map::View BundlingNamedCache::GetBundler::bundle(Collection::View vColKeys)
     {
-    return getBundlingNamedCache()->BundlingNamedCache::super::getAll(vColKeys);
+    Map::View vResults = getBundlingNamedCache()->BundlingNamedCache::super::getAll(vColKeys);
+    // COH-31796: bundled follower threads share this map; concurrent reads must be supported
+    return vResults == NULL
+            ? vResults
+            : Collections::synchronizedMap(vResults);
     }
 
 Object::Holder BundlingNamedCache::GetBundler::unbundle(Object::View vKey) const
