@@ -74,6 +74,7 @@
       <sysproperty key="tangosol.coherence.override" value="${server.override.config}"/>
       <sysproperty key="tangosol.coherence.log" value="${log.name}"/>
       <sysproperty key="tangosol.coherence.log.level" value="${server.log.level}"/>
+      <sysproperty key="coherence.management" value="all"/>
       <sysproperty key="tangosol.coherence.management" value="all"/>
       <sysproperty key="tangosol.coherence.messaging.debug" value="${server.debug.log}"/>
       <sysproperty key="tangosol.coherence.proxy.port" value="${proxy.port}"/>
