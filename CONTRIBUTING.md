@@ -59,6 +59,12 @@ can be accepted.
 1. We will assign the pull request to 2-3 people for review before it is submitted
    internally and the PR is closed.
 
+## GitHub Actions security checks
+
+Keep GitHub Actions references pinned to full commit SHAs. Ensure that the
+`Macaron policy verification` check passes for your pull request. Review its
+findings and recommended fixes if it fails.
+
 ## Code of conduct
 
 Follow the [Golden Rule](https://en.wikipedia.org/wiki/Golden_Rule). If you'd

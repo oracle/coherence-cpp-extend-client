@@ -1,0 +1,33 @@
+name: Macaron check-github-actions
+
+on:
+  # Required checks must report a result for every pull request.
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  macaron-check-github-actions:
+    name: Macaron policy verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run Macaron check-github-actions policy
+        uses: oracle/macaron@794eec32782979f577efb5ff71d585f683a3550f # v0.25.0
+        with:
+          repo_path: ./
+          digest: ${{ github.sha }}
+          policy_file: check-github-actions
+          policy_purl: pkg:github.com/${{ github.repository }}@${{ github.sha }}
